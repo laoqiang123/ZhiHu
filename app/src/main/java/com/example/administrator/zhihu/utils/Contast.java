@@ -8,6 +8,7 @@ package com.example.administrator.zhihu.utils;
 public class Contast {
     public static final String BASEURL = "http://news-at.zhihu.com/api/4/";
     public static final String START = "start-image/1080*1776";
+    public static final String THEMES = "themes";
 
 
 }

@@ -1,8 +1,12 @@
 package com.example.administrator.zhihu.activity;
 
+import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Window;
@@ -34,6 +38,7 @@ import java.io.InputStream;
 public class SplashActivity extends AppCompatActivity {
     ImageView iv;
     Bitmap bitmap;
+    Handler handler;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -41,6 +46,15 @@ public class SplashActivity extends AppCompatActivity {
         setContentView(R.layout.splash_layout);
         iv = (ImageView) findViewById(R.id.iv);
         initImage();
+        handler = new Handler(){
+            @Override
+            public void handleMessage(Message msg) {
+                super.handleMessage(msg);
+                if(msg.what==123){
+                    startActivity(ApplicationUtil.getContext(), MainActivity.class);
+                }
+            }
+        };
 
     }
 
@@ -75,15 +89,25 @@ public class SplashActivity extends AppCompatActivity {
                                 JSONObject jsonObject = new JSONObject(response);
                                 Log.d("tag", response + "数据");
                                 String imageurl = jsonObject.getString("img");
-                                Log.d("tag",imageurl+"url");
+                                Log.d("tag", imageurl + "url");
                                 HttpUtils.getImage(imageurl, new HttpImageCallableListener() {
                                     @Override
                                     public void onScuess(byte[] b) {
-                                        saveImage(imagefile,b);
+                                        saveImage(imagefile, b);
+                                     //   handler.sendEmptyMessage(123);
+                                        runOnUiThread(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                startActivity(ApplicationUtil.getContext(), MainActivity.class);
+
+                                            }
+                                        });
+
                                     }
 
                                     @Override
                                     public void onFailure() {
+                                        handler.sendEmptyMessage(123);
 
                                     }
                                 });
@@ -96,15 +120,15 @@ public class SplashActivity extends AppCompatActivity {
 
                         @Override
                         public void onFailure(Exception e) {
-                            ActivityUtils.startActivity(ApplicationUtil.getContext(), MainActivity.class);
-                            finish();
+                            handler.sendEmptyMessage(123);
 
                         }
                     });
                 } else {
                     ActivityUtils.shortToast(ApplicationUtil.getContext(), "网络请求有误");
-                    ActivityUtils.startActivity(ApplicationUtil.getContext(), MainActivity.class);
-                    finish();
+                    startActivity(ApplicationUtil.getContext(), MainActivity.class);
+
+
                 }
 
             }
@@ -150,6 +174,19 @@ public class SplashActivity extends AppCompatActivity {
         }
 
 
+    }
+
+    /**
+     *
+     * @param context  上下文
+     * @param c 跳转的类。
+     *  实现了activity 之间的跳转，并且带动画效果。
+     */
+    public   void startActivity(Context context,Class c) {
+        Intent intent = new Intent(context, c);
+        startActivity(intent);
+        finish();
+        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
     }
 
 }
