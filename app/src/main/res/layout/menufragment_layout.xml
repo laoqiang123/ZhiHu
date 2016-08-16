@@ -45,7 +45,6 @@
                 android:gravity="center"
                 android:text="我的收藏"
                 android:textSize="15sp"
-
                 />
 
             <TextView
@@ -62,6 +61,7 @@
     </LinearLayout>
 
     <TextView
+        android:id="@+id/tv_main"
         android:textSize="15sp"
         android:layout_width="wrap_content"
         android:layout_height="30dp"

@@ -1,6 +1,7 @@
 package com.example.administrator.zhihu.activity;
 
 import android.os.Bundle;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -9,6 +10,7 @@ import android.support.v7.widget.Toolbar;
 import android.widget.FrameLayout;
 
 import com.example.administrator.zhihu.R;
+import com.example.administrator.zhihu.fragment.MainFragment;
 
 /**
  * @author laoqiang
@@ -19,7 +21,6 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
     private Toolbar toolbar;
     private SwipeRefreshLayout swiprrefresh;
     private DrawerLayout drawerlayout;
-    private FrameLayout container;
 
 
     @Override
@@ -27,6 +28,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ininView();
+        loadLasted();
     }
 
     /**
@@ -46,15 +48,10 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
                 .color.holo_red_light);
         swiprrefresh.setOnRefreshListener(this);
         drawerlayout = (DrawerLayout) findViewById(R.id.drawerlayout);
-        container   = (FrameLayout) findViewById(R.id.container);
         ActionBarDrawerToggle actionBarDrawerToggle = new ActionBarDrawerToggle(this,
                 drawerlayout,toolbar,R.string.app_name,R.string.app_name);
         drawerlayout.setDrawerListener(actionBarDrawerToggle);
         actionBarDrawerToggle.syncState();
-
-
-
-
     }
 
     /**
@@ -62,6 +59,15 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
      */
     @Override
     public void onRefresh() {
+
+    }
+    public void setToolBarTitle(String title){
+        getSupportActionBar().setTitle(title);
+    }
+    public void loadLasted(){
+        FragmentManager fm = getSupportFragmentManager();
+        android.support.v4.app.FragmentTransaction ft = fm.beginTransaction();
+        ft.setCustomAnimations(R.anim.in_right,R.anim.out_left).replace(R.id.container,new MainFragment()).commit();
 
     }
 }

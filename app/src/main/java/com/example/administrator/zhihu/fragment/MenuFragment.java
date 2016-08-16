@@ -10,6 +10,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import com.example.administrator.zhihu.R;
 import com.example.administrator.zhihu.adapter.NewTitleAdapter;
@@ -32,17 +33,20 @@ import java.util.List;
  * Created by Administrator on 2016/8/12 0012.
  * @author laoqiang
  */
-public class MenuFragment extends Fragment {
+public class MenuFragment extends Fragment implements View.OnClickListener {
     private List<NewTitleBean> list = new ArrayList<>();
     private ListView listview;
     private NewTitleAdapter adapter;
     private Handler handler;
+    private TextView tv_main;
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.menufragment_layout,null,false);
         listview = (ListView) v.findViewById(R.id.listview);
+        tv_main = (TextView) v.findViewById(R.id.tv_main);
         initData();
+        tv_main.setOnClickListener(this);
         handler = new Handler(){
             @Override
             public void handleMessage(Message msg) {
@@ -108,4 +112,8 @@ public class MenuFragment extends Fragment {
     }
 
 
+    @Override
+    public void onClick(View v) {
+
+    }
 }
