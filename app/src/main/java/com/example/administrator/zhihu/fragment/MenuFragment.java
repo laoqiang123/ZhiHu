@@ -5,14 +5,17 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
+import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
 
 import com.example.administrator.zhihu.R;
+import com.example.administrator.zhihu.activity.MainActivity;
 import com.example.administrator.zhihu.adapter.NewTitleAdapter;
 import com.example.administrator.zhihu.bean.NewTitleBean;
 import com.example.administrator.zhihu.utils.ActivityUtils;
@@ -33,7 +36,7 @@ import java.util.List;
  * Created by Administrator on 2016/8/12 0012.
  * @author laoqiang
  */
-public class MenuFragment extends Fragment implements View.OnClickListener {
+public class MenuFragment extends Fragment implements View.OnClickListener, AdapterView.OnItemClickListener {
     private List<NewTitleBean> list = new ArrayList<>();
     private ListView listview;
     private NewTitleAdapter adapter;
@@ -56,6 +59,7 @@ public class MenuFragment extends Fragment implements View.OnClickListener {
                 }
             }
         };
+        listview.setOnItemClickListener(this);
         return v;
     }
 
@@ -98,6 +102,7 @@ public class MenuFragment extends Fragment implements View.OnClickListener {
                 JSONObject jsonobject1 = jsonarray.getJSONObject(i);
                 NewTitleBean ntb = new NewTitleBean();
                 ntb.setId(jsonobject1.getInt("id"));
+                Log.d("id",jsonobject1.getInt("id")+"sdasd");
                 ntb.setTitle(jsonobject1.getString("name"));
                 list.add(ntb);
             }
@@ -114,6 +119,24 @@ public class MenuFragment extends Fragment implements View.OnClickListener {
 
     @Override
     public void onClick(View v) {
+
+    }
+
+    /**
+     *
+     * @param parent
+     * @param view
+     * @param position
+     * @param id
+     * 点击侧滑菜单的条目。
+     */
+    @Override
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        FragmentManager fm = getFragmentManager();
+        android.support.v4.app.FragmentTransaction ft = fm.beginTransaction();
+        ft.setCustomAnimations(R.anim.in_right,R.anim.out_left).replace(R.id.container,new NewFragment(list.get(position).getId(),list.get(position).getTitle())).commit();
+        ((MainActivity)getActivity()).closeDrawLayout();
+
 
     }
 }

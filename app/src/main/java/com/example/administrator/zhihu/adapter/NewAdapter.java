@@ -2,6 +2,7 @@ package com.example.administrator.zhihu.adapter;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -65,29 +66,33 @@ public class NewAdapter extends BaseAdapter {
        // 首先在这先进行属性配置，是否进行缓存，加载不出来时候默认的图片，等等属性配置
 
         holder.tv_show.setText(list.get(position).getTitle());
-        ImageLoader.getInstance().loadImage(list.get(position).getImages(), options, new ImageLoadingListener() {
-            @Override
-            public void onLoadingStarted(String imageUri, View view) {
+        if(null!=list.get(position).getImages()) {
+            ImageLoader.getInstance().loadImage(list.get(position).getImages(), options, new ImageLoadingListener() {
+                @Override
+                public void onLoadingStarted(String imageUri, View view) {
 
-            }
+                }
 
-            @Override
-            public void onLoadingFailed(String imageUri, View view, FailReason failReason) {
+                @Override
+                public void onLoadingFailed(String imageUri, View view, FailReason failReason) {
 
-            }
+                }
 
-            @Override
-            public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
-                holder.iv.setImageBitmap(loadedImage);
+                @Override
+                public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
+                    holder.iv.setImageBitmap(loadedImage);
 
-            }
+                }
 
-            @Override
-            public void onLoadingCancelled(String imageUri, View view) {
+                @Override
+                public void onLoadingCancelled(String imageUri, View view) {
 
-            }
-        });
-
+                }
+            });
+        }else{
+            Log.d("iv","执行");
+            holder.iv.setVisibility(View.INVISIBLE);
+        }
 
         return convertView;
     }

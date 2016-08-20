@@ -70,4 +70,14 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         ft.setCustomAnimations(R.anim.in_right,R.anim.out_left).replace(R.id.container,new MainFragment()).commit();
 
     }
+    /*public void setId(String id){
+
+    }*/
+
+    /**
+     * 关闭侧滑
+     */
+    public void closeDrawLayout(){
+            drawerlayout.closeDrawers();
+    }
 }

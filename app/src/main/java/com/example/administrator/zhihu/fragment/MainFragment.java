@@ -34,6 +34,7 @@ import java.util.List;
 /**
  * Created by Administrator on 2016/8/13 0013.
  * @author  laoqiang
+ * 主界面今日热点新闻的页面展示
  */
 public class MainFragment extends Fragment {
     private ListView listview;
@@ -44,8 +45,11 @@ public class MainFragment extends Fragment {
     private  Handler handler;
     private Handler handler1;
     private List<NewBean> list = new ArrayList<>();
+
+
     @Nullable
     @Override
+
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         /**
          * 通过mainactivity中的方法暴露出来根据fragment来设置toolbar标题.
