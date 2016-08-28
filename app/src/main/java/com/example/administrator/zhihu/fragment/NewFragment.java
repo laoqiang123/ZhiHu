@@ -1,5 +1,6 @@
 package com.example.administrator.zhihu.fragment;
 
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Handler;
@@ -10,11 +11,13 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
 import com.example.administrator.zhihu.R;
+import com.example.administrator.zhihu.activity.NewContentActivity;
 import com.example.administrator.zhihu.adapter.NewAdapter;
 import com.example.administrator.zhihu.bean.NewBean;
 import com.example.administrator.zhihu.utils.ApplicationUtil;
@@ -91,6 +94,7 @@ public class NewFragment extends Fragment {
                         public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
                             iv_title.setImageBitmap(loadedImage);
 
+
                         }
 
                         @Override
@@ -101,9 +105,23 @@ public class NewFragment extends Fragment {
                     tv_title.setText(description);
                     NewAdapter adapter = new NewAdapter(list, ApplicationUtil.getContext());
                     listview.setAdapter(adapter);
+                    listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                        @Override
+                        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                            int[] postion = new int[2];
+                            view.getLocationOnScreen(postion);
+                            postion[0] = view.getWidth()/2;
+                            Intent intent = new Intent(ApplicationUtil.getContext(), NewContentActivity.class);
+                            intent.putExtra("newid", list.get(position-1).getId());//注意存放获取的位置有偏差。否则出现标题，内容不一致。
+                            intent.putExtra("STARTPOSITION",postion);
+                            startActivity(intent);
+                            getActivity().overridePendingTransition(0,0);//设置没有动画
+                        }
+                    });
                 }
             }
         };
+
         return v;
     }
 
@@ -113,6 +131,7 @@ public class NewFragment extends Fragment {
             public void onScuess(String response) {
                 parseJson(response);
                 handler.sendEmptyMessage(123);
+
 
             }
 
@@ -151,9 +170,11 @@ public class NewFragment extends Fragment {
                  * or optString if you're not sure if it will be there.
                  */
                 String title = jsonObject1.getString("title");
+                int id = jsonObject1.getInt("id");
                 nb = new NewBean();
                 nb.setImages(images);
                 nb.setTitle(title);
+                nb.setId(id);
                 list.add(nb);
             }
         } catch (JSONException e) {

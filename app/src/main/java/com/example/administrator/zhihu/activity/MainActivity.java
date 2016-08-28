@@ -59,6 +59,8 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
      */
     @Override
     public void onRefresh() {
+        swiprrefresh.setRefreshing(false);
+        loadLasted();
 
     }
     public void setToolBarTitle(String title){

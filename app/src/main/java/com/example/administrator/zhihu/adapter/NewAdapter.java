@@ -90,7 +90,6 @@ public class NewAdapter extends BaseAdapter {
                 }
             });
         }else{
-            Log.d("iv","执行");
             holder.iv.setVisibility(View.INVISIBLE);
         }
 

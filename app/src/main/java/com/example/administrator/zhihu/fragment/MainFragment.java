@@ -1,5 +1,6 @@
 package com.example.administrator.zhihu.fragment;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -10,10 +11,12 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ListView;
 
 import com.example.administrator.zhihu.R;
 import com.example.administrator.zhihu.activity.MainActivity;
+import com.example.administrator.zhihu.activity.NewContentActivity;
 import com.example.administrator.zhihu.adapter.NewAdapter;
 import com.example.administrator.zhihu.adapter.NewTitleAdapter;
 import com.example.administrator.zhihu.bean.NewBean;
@@ -41,11 +44,14 @@ public class MainFragment extends Fragment {
     private Banner banner;
     private List<String> titlelist = new ArrayList<>();//存放标题
     private List<String> imageurllist = new ArrayList<>();//存放图片url
+    private List<Integer> urlid = new ArrayList<>();//存放banner的详细条目的id
     private NewBean nb;
     private  Handler handler;
     private Handler handler1;
     private List<NewBean> list = new ArrayList<>();
 
+    public MainFragment() {
+    }
 
     @Nullable
     @Override
@@ -67,7 +73,6 @@ public class MainFragment extends Fragment {
             public void handleMessage(Message msg) {
                 super.handleMessage(msg);
                 if(msg.what==123){
-                    Log.d("tag11", imageurllist.size() + "");
                     banner.setBannerTitleList(titlelist);
                     banner.setImages(imageurllist);//上面所有的设置一定要在设置图片之前。
 
@@ -75,6 +80,19 @@ public class MainFragment extends Fragment {
             }
         };
         banner.setImages(imageurllist);listview.addHeaderView(header);
+        banner.setOnBannerClickListener(new Banner.OnBannerClickListener() {
+            @Override
+            public void OnBannerClick(View view, int position) {
+                int[] postion = new int[2];
+                view.getLocationOnScreen(postion);
+                postion[0] = view.getWidth()/2;
+                Intent intent = new Intent(ApplicationUtil.getContext(), NewContentActivity.class);
+                intent.putExtra("newid", urlid.get(position - 1));
+                intent.putExtra("STARTPOSITION",postion);
+                startActivity(intent);
+                getActivity().overridePendingTransition(0,0);//设置没有动画
+            }
+        });
         final NewAdapter adapter = new NewAdapter(list,ApplicationUtil.getContext());
         handler1 = new Handler(){
             @Override
@@ -82,6 +100,19 @@ public class MainFragment extends Fragment {
                 super.handleMessage(msg);
                 if(msg.what==234){
                     listview.setAdapter(adapter);
+                    listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                        @Override
+                        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                            int[] postion = new int[2];
+                            view.getLocationOnScreen(postion);
+                            postion[0] = view.getWidth()/2;
+                            Intent intent = new Intent(ApplicationUtil.getContext(), NewContentActivity.class);
+                            intent.putExtra("newid", list.get(position-1).getId());
+                            intent.putExtra("STARTPOSITION",postion);
+                            startActivity(intent);
+                            getActivity().overridePendingTransition(0,0);//设置没有动画
+                        }
+                    });
                 }
             }
         };
@@ -96,7 +127,6 @@ public class MainFragment extends Fragment {
             @Override
             public void onScuess(String response) {
                 parseTopJson(response);
-                Log.d("tag11", response);
                 handler.sendEmptyMessage(123);
 
 
@@ -134,9 +164,10 @@ public class MainFragment extends Fragment {
                 JSONObject jsonObject1 = jsonArray.getJSONObject(i);
                 String imageurl = jsonObject1.getString("image");
                 String title =jsonObject1.getString("title");
+                int id = jsonObject1.getInt("id");
                 titlelist.add(title);
-                Log.d("tag12",i+"");
                 imageurllist.add(imageurl);
+                urlid.add(id);
             }
         } catch (JSONException e) {
             e.printStackTrace();
@@ -158,9 +189,11 @@ public class MainFragment extends Fragment {
                 JSONArray jsonArray1 = jsonObject1.getJSONArray("images");
                 String images = jsonArray1.getString(0);
                 String title = jsonObject1.getString("title");
+                int id = jsonObject1.getInt("id");
                 nb = new NewBean();
                 nb.setImages(images);
                 nb.setTitle(title);
+                nb.setId(id);
                 list.add(nb);
             }
         } catch (JSONException e) {

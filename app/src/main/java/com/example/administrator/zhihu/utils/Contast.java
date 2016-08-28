@@ -11,6 +11,7 @@ public class Contast {
     public static final String THEMES = "themes";
     public static final String LATESTNEWS = "news/latest";
     public static final String THEMENEWS = "theme/";
+    public static final String CONTENT = "news/";
 
 
 }
