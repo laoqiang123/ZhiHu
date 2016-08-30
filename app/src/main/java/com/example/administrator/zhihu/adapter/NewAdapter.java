@@ -8,6 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.example.administrator.zhihu.R;
@@ -53,6 +54,8 @@ public class NewAdapter extends BaseAdapter {
         if(convertView==null){
             holder = new ViewHolder();
             convertView = LayoutInflater.from(ApplicationUtil.getContext()).inflate(R.layout.new_item_layout,null);
+            LinearLayout ll_all  = (LinearLayout) convertView.findViewById(R.id.ll_all);
+            ll_all.setBackgroundColor(ApplicationUtil.getContext().getResources().getColor(R.color.black));
             holder.tv_show = (TextView) convertView.findViewById(R.id.tv_show);
             holder.iv = (ImageView) convertView.findViewById(R.id.iv);
             convertView.setTag(holder);

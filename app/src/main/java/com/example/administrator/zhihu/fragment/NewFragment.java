@@ -17,6 +17,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.example.administrator.zhihu.R;
+import com.example.administrator.zhihu.activity.MainActivity;
 import com.example.administrator.zhihu.activity.NewContentActivity;
 import com.example.administrator.zhihu.adapter.NewAdapter;
 import com.example.administrator.zhihu.bean.NewBean;
@@ -53,27 +54,33 @@ public class NewFragment extends Fragment {
     private Handler handler;
     private int id;
     private String title;
+    private  View v;
+    public NewFragment() {
 
-
-    public NewFragment(int id, String title) {
-        this.urlid = id;
-        this.title = title;
     }
+
+
+
+
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View v = inflater.inflate(R.layout.new_fragment,container,false);
+        v = inflater.inflate(R.layout.new_fragment, container, false);
         listview = (ListView) v.findViewById(R.id.listview);
         View header = inflater.inflate(R.layout.new_header_layout,null);
         iv_title = (ImageView) header.findViewById(R.id.iv_title);
         tv_title = (TextView) header.findViewById(R.id.tv_title);
+        id = ((MainActivity)getActivity()).getId();
+        title = ((MainActivity)getActivity()).getTitlecontent();
+        urlid = id;
         final DisplayImageOptions options = new DisplayImageOptions.Builder()//这里的处理就是对于image的错位。
                 .cacheInMemory(true) // default
                 .cacheOnDisk(true) // default
                 .build();
         // 首先在这先进行属性配置，是否进行缓存，加载不出来时候默认的图片，等等属性配置
         initData();
-        listview.addHeaderView(header);
+        listview.addHeaderView(header,null,false);//设置它不可以选中。
         handler = new Handler(){
             @Override
             public void handleMessage(Message msg) {

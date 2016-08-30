@@ -6,9 +6,10 @@
     android:background="@android:color/white" >
 
     <LinearLayout
+        android:id="@+id/ll_head"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@android:color/holo_blue_light"
+        android:background="@color/light_toolbar"
         android:orientation="vertical">
 
         <LinearLayout

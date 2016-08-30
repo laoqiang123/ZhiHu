@@ -5,12 +5,12 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -42,12 +42,19 @@ public class MenuFragment extends Fragment implements View.OnClickListener, Adap
     private NewTitleAdapter adapter;
     private Handler handler;
     private TextView tv_main;
+    private boolean islight;
+    private LinearLayout ll_head;
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.menufragment_layout,null,false);
+        islight  =((MainActivity)getActivity()).islight;
         listview = (ListView) v.findViewById(R.id.listview);
         tv_main = (TextView) v.findViewById(R.id.tv_main);
+        ll_head  = (LinearLayout) v.findViewById(R.id.ll_head);
+        if(!islight){
+            updateTheme();
+        }
         initData();
         tv_main.setOnClickListener(this);
         handler = new Handler(){
@@ -61,6 +68,11 @@ public class MenuFragment extends Fragment implements View.OnClickListener, Adap
         };
         listview.setOnItemClickListener(this);
         return v;
+    }
+
+    private void updateTheme() {
+        listview.setBackgroundColor(getResources().getColor( R.color.black));
+        ll_head.setBackgroundColor(getResources().getColor(R.color.black));
     }
 
     private void initData() {
@@ -106,7 +118,7 @@ public class MenuFragment extends Fragment implements View.OnClickListener, Adap
                 ntb.setTitle(jsonobject1.getString("name"));
                 list.add(ntb);
             }
-             adapter = new NewTitleAdapter(ApplicationUtil.getContext(),list);
+            adapter = new NewTitleAdapter(ApplicationUtil.getContext(),list);
             handler.sendEmptyMessage(123);
 
 
@@ -116,10 +128,14 @@ public class MenuFragment extends Fragment implements View.OnClickListener, Adap
 
     }
 
-
+    /**
+     * 菜单首页点击
+     * @param v
+     */
     @Override
     public void onClick(View v) {
-
+        ((MainActivity)getActivity()).loadLasted();
+        ((MainActivity)getActivity()).closeDrawLayout();
     }
 
     /**
@@ -132,10 +148,12 @@ public class MenuFragment extends Fragment implements View.OnClickListener, Adap
      */
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        FragmentManager fm = getFragmentManager();
-        android.support.v4.app.FragmentTransaction ft = fm.beginTransaction();
-        ft.setCustomAnimations(R.anim.in_right,R.anim.out_left).replace(R.id.container,new NewFragment(list.get(position).getId(),list.get(position).getTitle())).commit();
+        ((MainActivity)getActivity()).setId(list.get(position).getId());
+        ((MainActivity)getActivity()).setTitle(list.get(position).getTitle());
+        ((MainActivity) getActivity()).loadThemeLasted();
+        ((MainActivity) getActivity()).setRefreshtag("item");
         ((MainActivity)getActivity()).closeDrawLayout();
+
 
 
     }

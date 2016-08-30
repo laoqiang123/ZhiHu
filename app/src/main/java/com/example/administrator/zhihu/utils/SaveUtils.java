@@ -20,8 +20,23 @@ public class SaveUtils {
         if(sp==null){
             sp = context.getSharedPreferences("zhihu.txt",Context.MODE_PRIVATE);
         }
-        String value = sp.getString(key,"");
+        String value = sp.getString(key, "");
         return value;
+    }
+    public static  void saveBoolean(Context context,String key,Boolean value){
+        if(sp==null){
+            sp = context.getSharedPreferences("zhuhu.txt",Context.MODE_PRIVATE);
+        }
+        SharedPreferences.Editor editor = sp.edit();
+        editor.putBoolean(key,value);
+        editor.commit();
+    }
+    public static void getBoolean(Context context,String key){
+        if(sp==null){
+            sp = context.getSharedPreferences("zhuhu.txt",Context.MODE_PRIVATE);
+        }
+        Boolean value = sp.getBoolean(key,true);
+
     }
 
 

@@ -3,6 +3,7 @@
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="@color/light_news_item"
+    android:id="@+id/ll_all"
     >
     <LinearLayout
         android:layout_width="match_parent"
