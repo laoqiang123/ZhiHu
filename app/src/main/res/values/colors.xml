@@ -7,5 +7,11 @@
     <color name="light_toolbar">@android:color/holo_blue_dark</color>
     <color name="dark_toolbar">@android:color/black</color>
     <color name="black">@android:color/black</color>
+    <color name="red">#00ff00</color>
+    <color name="white">#ffffff</color>
+    <color name="transule">#00000000</color>
+    <color name="dark_news_topic">#CCFFFFFF</color>
+    <color name="grey">#ff666666</color>
+
 
 </resources>

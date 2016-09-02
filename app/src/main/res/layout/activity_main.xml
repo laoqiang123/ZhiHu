@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/drawerlayout"
     tools:context="com.example.administrator.zhihu.MainActivity">
 
@@ -16,6 +17,8 @@
             android:layout_width="match_parent"
             android:layout_height="?actionBarSize"
             android:background="@color/light_toolbar"
+            app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
+            app:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
             />
 
         <android.support.v4.widget.SwipeRefreshLayout
@@ -34,6 +37,7 @@
 
     </LinearLayout>
     <fragment
+        android:id="@+id/menu_fragment"
         android:name="com.example.administrator.zhihu.fragment.MenuFragment"
         android:layout_width="240dp"
         android:layout_height="match_parent"

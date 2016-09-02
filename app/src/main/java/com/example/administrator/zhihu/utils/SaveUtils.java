@@ -31,11 +31,12 @@ public class SaveUtils {
         editor.putBoolean(key,value);
         editor.commit();
     }
-    public static void getBoolean(Context context,String key){
+    public static boolean getBoolean(Context context,String key){
         if(sp==null){
             sp = context.getSharedPreferences("zhuhu.txt",Context.MODE_PRIVATE);
         }
         Boolean value = sp.getBoolean(key,true);
+        return  value;
 
     }
 

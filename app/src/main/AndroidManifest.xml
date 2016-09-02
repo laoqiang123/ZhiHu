@@ -22,7 +22,7 @@
             </activity>
         <activity android:name=".activity.MainActivity">
         </activity>
-        <activity android:name=".activity.NewContentActivity">
+        <activity android:name=".activity.NewContentActivity" android:theme="@style/AppTheme.TransparentActivity">
         </activity>
     </application>
 

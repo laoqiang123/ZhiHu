@@ -8,7 +8,10 @@ import android.widget.BaseAdapter;
 import android.widget.TextView;
 
 import com.example.administrator.zhihu.R;
+import com.example.administrator.zhihu.activity.MainActivity;
 import com.example.administrator.zhihu.bean.NewTitleBean;
+import com.example.administrator.zhihu.utils.ApplicationUtil;
+import com.example.administrator.zhihu.utils.SaveUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,10 +24,20 @@ import java.util.List;
 public class NewTitleAdapter extends BaseAdapter {
     private List<NewTitleBean> list = new ArrayList<>();
     private Context context;
+    private boolean islight;
 
     public NewTitleAdapter(Context context, List<NewTitleBean> list) {
         this.context = context;
         this.list = list;
+    }
+
+    public boolean islight() {
+        return islight;
+    }
+
+    public void setIslight(boolean islight) {
+        this.islight = islight;
+        notifyDataSetChanged();
     }
 
     @Override
@@ -53,10 +66,14 @@ public class NewTitleAdapter extends BaseAdapter {
         }else{
             holder  = (ViewHolder) convertView.getTag();
         }
+        holder.tv_title.setTextColor(islight?ApplicationUtil.getContext().getResources().getColor(R.color.black):ApplicationUtil.getContext().getResources().getColor(R.color.white));
         holder.tv_title.setText(list.get(position).getTitle());
 
         return convertView;
     }
+
+
+
     class ViewHolder{
         TextView tv_title;
     }

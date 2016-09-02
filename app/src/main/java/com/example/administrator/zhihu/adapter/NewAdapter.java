@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import com.example.administrator.zhihu.R;
@@ -28,10 +29,22 @@ public class NewAdapter extends BaseAdapter {
     private List<NewBean> list;
     private Context context;
     ViewHolder holder = null;
+    private  boolean islight;
+
 
     public NewAdapter(List<NewBean> list, Context context) {
         this.list = list;
         this.context = context;
+    }
+
+    public boolean islight() {
+        return islight;
+    }
+
+    public void setIslight(boolean islight) {
+        this.islight = islight;
+        notifyDataSetChanged();
+
     }
 
     @Override
@@ -54,14 +67,17 @@ public class NewAdapter extends BaseAdapter {
         if(convertView==null){
             holder = new ViewHolder();
             convertView = LayoutInflater.from(ApplicationUtil.getContext()).inflate(R.layout.new_item_layout,null);
-            LinearLayout ll_all  = (LinearLayout) convertView.findViewById(R.id.ll_all);
-            ll_all.setBackgroundColor(ApplicationUtil.getContext().getResources().getColor(R.color.black));
+            holder.ll_all  = (LinearLayout) convertView.findViewById(R.id.ll_all);
+            holder.ll_item  = (LinearLayout) convertView.findViewById(R.id.ll_item);
             holder.tv_show = (TextView) convertView.findViewById(R.id.tv_show);
             holder.iv = (ImageView) convertView.findViewById(R.id.iv);
             convertView.setTag(holder);
         }else{
             convertView.getTag();
         }
+        holder.ll_all.setBackgroundColor(islight()?ApplicationUtil.getContext().getResources().getColor(R.color.transule):ApplicationUtil.getContext().getResources().getColor(R.color.black));
+        holder.ll_item.setBackgroundColor(islight()?ApplicationUtil.getContext().getResources().getColor(R.color.white):ApplicationUtil.getContext().getResources().getColor(R.color.grey));
+        holder.tv_show.setTextColor(islight() ? ApplicationUtil.getContext().getResources().getColor(R.color.black) : ApplicationUtil.getContext().getResources().getColor(R.color.white));
         DisplayImageOptions options = new DisplayImageOptions.Builder()//这里的处理就是对于image的错位。
                 .cacheInMemory(true) // default
                 .cacheOnDisk(true) // default
@@ -101,5 +117,7 @@ public class NewAdapter extends BaseAdapter {
     class ViewHolder{
         TextView tv_show;
         ImageView iv;
+        LinearLayout ll_all,ll_item;
+
     }
 }

@@ -42,19 +42,18 @@ public class MenuFragment extends Fragment implements View.OnClickListener, Adap
     private NewTitleAdapter adapter;
     private Handler handler;
     private TextView tv_main;
-    private boolean islight;
     private LinearLayout ll_head;
+    private TextView tv_login,tv_save,tv_download;
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.menufragment_layout,null,false);
-        islight  =((MainActivity)getActivity()).islight;
         listview = (ListView) v.findViewById(R.id.listview);
         tv_main = (TextView) v.findViewById(R.id.tv_main);
         ll_head  = (LinearLayout) v.findViewById(R.id.ll_head);
-        if(!islight){
-            updateTheme();
-        }
+        tv_login = (TextView) v.findViewById(R.id.tv_login);
+        tv_save = (TextView) v.findViewById(R.id.tv_save);
+        tv_download = (TextView) v.findViewById(R.id.tv_download);
         initData();
         tv_main.setOnClickListener(this);
         handler = new Handler(){
@@ -63,6 +62,8 @@ public class MenuFragment extends Fragment implements View.OnClickListener, Adap
                 super.handleMessage(msg);
                 if(msg.what==123) {
                     listview.setAdapter(adapter);
+                    updateTheme(SaveUtils.getBoolean(ApplicationUtil.getContext(), "LIGHT"));
+
                 }
             }
         };
@@ -70,9 +71,14 @@ public class MenuFragment extends Fragment implements View.OnClickListener, Adap
         return v;
     }
 
-    private void updateTheme() {
-        listview.setBackgroundColor(getResources().getColor( R.color.black));
-        ll_head.setBackgroundColor(getResources().getColor(R.color.black));
+
+    public void updateTheme(boolean flag) {
+        listview.setBackgroundColor(flag ? getResources().getColor(R.color.white) : getResources().getColor(R.color.black));
+        ll_head.setBackgroundColor(flag ? getResources().getColor(R.color.light_toolbar) : getResources().getColor(R.color.black));
+        tv_login.setTextColor(flag ? getResources().getColor(R.color.white) : getResources().getColor(R.color.white));
+        tv_save.setTextColor(flag?getResources().getColor(R.color.white):getResources().getColor(R.color.white));
+        tv_download.setTextColor(flag?getResources().getColor(R.color.white):getResources().getColor(R.color.white));
+        adapter.setIslight(flag);
     }
 
     private void initData() {
@@ -82,25 +88,19 @@ public class MenuFragment extends Fragment implements View.OnClickListener, Adap
                 public void onScuess(String response) {
                     SaveUtils.saveString(ApplicationUtil.getContext(),Contast.THEMES,response);
                     parseJson(response);
-
-
-
                 }
 
                 @Override
                 public void onFailure(Exception e) {
                     String result  =  SaveUtils.getString(ApplicationUtil.getContext(),Contast.THEMES);
                     parseJson(result);
-
                 }
             });
 
         }else{
             ActivityUtils.shortToast(getActivity(),"当前网络有问题");
         }
-        listview.setAdapter(adapter);
     }
-
     /**
      *
      * @param result json数据
@@ -114,14 +114,11 @@ public class MenuFragment extends Fragment implements View.OnClickListener, Adap
                 JSONObject jsonobject1 = jsonarray.getJSONObject(i);
                 NewTitleBean ntb = new NewTitleBean();
                 ntb.setId(jsonobject1.getInt("id"));
-                Log.d("id",jsonobject1.getInt("id")+"sdasd");
                 ntb.setTitle(jsonobject1.getString("name"));
                 list.add(ntb);
             }
             adapter = new NewTitleAdapter(ApplicationUtil.getContext(),list);
             handler.sendEmptyMessage(123);
-
-
         } catch (JSONException e) {
             e.printStackTrace();
         }

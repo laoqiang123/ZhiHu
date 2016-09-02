@@ -2,13 +2,13 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@color/light_news_item"
     android:id="@+id/ll_all"
     >
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
+
         >
         <TextView
             android:layout_width="wrap_content"
@@ -18,8 +18,8 @@
             android:visibility="gone"
             />
     </LinearLayout>
-
     <LinearLayout
+        android:id="@+id/ll_item"
         android:layout_width="match_parent"
         android:layout_height="100dp"
         android:background="@drawable/item_background_selector"
@@ -28,6 +28,7 @@
         android:layout_marginLeft="8dp"
         android:layout_marginRight="8dp"
         android:orientation="horizontal"
+
         >
     <TextView
         android:layout_marginLeft="10dp"
@@ -36,7 +37,6 @@
         android:id="@+id/tv_show"
         android:layout_gravity="center"
         android:textSize="20sp"
-        android:textColor="@android:color/black"
         android:text="内容"
 
         />
@@ -52,7 +52,7 @@
         android:adjustViewBounds="true"
         android:src="@drawable/ic_launcher"
         />
+        </LinearLayout>
 
 </LinearLayout>
-    </LinearLayout>
 <!--为什么要linearlayout在包含一个linearlayout，实现的是每一个listview的item像单一块，通过，设置margin，和给最外面的linearlayout加背景区分。-->

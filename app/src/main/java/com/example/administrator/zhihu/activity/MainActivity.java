@@ -21,6 +21,7 @@ import android.widget.FrameLayout;
 
 import com.example.administrator.zhihu.R;
 import com.example.administrator.zhihu.fragment.MainFragment;
+import com.example.administrator.zhihu.fragment.MenuFragment;
 import com.example.administrator.zhihu.fragment.NewFragment;
 import com.example.administrator.zhihu.utils.ApplicationUtil;
 import com.example.administrator.zhihu.utils.SaveUtils;
@@ -38,7 +39,10 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
     private int id;
     private String titlecontent;
     public boolean islight;//这个布尔值设置白天或者晚上模式，true为白天,false为晚上.
-
+    private NewFragment nf;
+    private MainFragment mf;
+    private boolean tag;
+    private boolean freshtag;
 
 
     @Override
@@ -47,7 +51,10 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         setContentView(R.layout.activity_main);
         ininView();
         loadLasted();
+
     }
+
+
 
     /**
      * 菜单初始化
@@ -57,6 +64,11 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.setting, menu);
+        if(islight){
+            menu.getItem(0).setTitle("夜间模式");
+        }else{
+            menu.getItem(0).setTitle("日间模式");
+        }
         return true;
     }
 
@@ -67,19 +79,25 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
      */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+
         int id = item.getItemId();
         switch (id){
             case R.id.model:
                 if(item.getTitle().equals("日间模式")) {
                     item.setTitle("夜间模式");
                     islight = true;
-                    SaveUtils.saveBoolean(ApplicationUtil.getContext(),"LIGHT",islight);
                 }else if(item.getTitle().equals("夜间模式")){
-                   item.setTitle("日间模式");
+                    item.setTitle("日间模式");
                     islight = false;
-                    SaveUtils.saveBoolean(ApplicationUtil.getContext(),"LIGHT",islight);
                 }
-
+                SaveUtils.saveBoolean(ApplicationUtil.getContext(), "LIGHT", islight);
+                updateTheme();
+                ((MenuFragment) getSupportFragmentManager().findFragmentById(R.id.menu_fragment)).updateTheme(islight);
+                if(tag==false) {
+                    ((MainFragment) getSupportFragmentManager().findFragmentByTag("main")).updateTheme(islight);
+                }else{
+                    ((NewFragment)getSupportFragmentManager().findFragmentByTag("news")).updateTheme(islight);
+                }
                 break;
         }
         return super.onOptionsItemSelected(item);
@@ -108,6 +126,9 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
     public void setTitlecontent(String titlecontent) {
         this.titlecontent = titlecontent;
     }
+    public void setSwiprrefresh(boolean flag){
+        swiprrefresh.setEnabled(flag);
+    }
 
     /**
      * 初始化view。
@@ -118,16 +139,17 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         setSupportActionBar(toolbar);
         toolbar.setTitle(null);
       //  getSupportActionBar().setTitle("");
-        SaveUtils.getBoolean(ApplicationUtil.getContext(),"LIGHT");
-        toolbar.setBackgroundColor(getResources().getColor(islight ? R.color.light_toolbar : R.color.dark_toolbar));
-        setStatusBarColor(getResources().getColor(islight?R.color.light_toolbar:R.color.dark_toolbar));
+         islight = SaveUtils.getBoolean(ApplicationUtil.getContext(),"LIGHT");
+            updateTheme();
+
+
         /**
          * 设置下拉刷新的刷新的图标几种变化颜色
          */
         swiprrefresh.setColorSchemeColors(android.R.color.holo_blue_bright, android.R.
                 color.holo_green_light, android.R.color.holo_orange_light, android.R
                 .color.holo_red_light);
-        swiprrefresh.setOnRefreshListener(this);
+            swiprrefresh.setOnRefreshListener(this);
         drawerlayout = (DrawerLayout) findViewById(R.id.drawerlayout);
         ActionBarDrawerToggle actionBarDrawerToggle = new ActionBarDrawerToggle(this,
                 drawerlayout,toolbar,R.string.app_name,R.string.app_name);
@@ -153,13 +175,18 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
      */
     @Override
     public void onRefresh() {
-        swiprrefresh.setRefreshing(false);
-        if(getRefreshtag().equals("main")) {
-            loadLasted();
-        }else if(getRefreshtag().equals("item")){
-           loadThemeLasted();
-        }
-
+           if (getRefreshtag().equals("main")) {
+               loadLasted();
+           } else if (getRefreshtag().equals("item")) {
+               loadThemeLasted();
+           }
+           swiprrefresh.setRefreshing(false);
+        // SwipeRefreshLayout布局中目前只能包含一个子布局，
+        // 使用侦听机制来通知刷新事件。例如当用户使用下拉手势时，
+        // SwipeRefreshLayout会触发OnRefreshListener，然后刷新事
+        // 件会在onRefresh()方法中进行处理。当需要结束刷新的时候，
+        // 可以调用setRefreshing(false)。如果要禁用手势和进度动画，
+        // 调用setEnabled(false)即可。
     }
     public void setToolBarTitle(String title){
         getSupportActionBar().setTitle(title);
@@ -167,19 +194,25 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
     public void loadLasted(){
         FragmentManager fm = getSupportFragmentManager();
         android.support.v4.app.FragmentTransaction ft = fm.beginTransaction();
-        ft.setCustomAnimations(R.anim.in_right,R.anim.out_left).replace(R.id.container,new MainFragment()).commit();
+        mf = new MainFragment();
+        ft.setCustomAnimations(R.anim.in_right,R.anim.out_left).replace(R.id.container,mf,"main").commit();
+        fm.executePendingTransactions();
         setRefreshtag("main");//设置今日热文的刷新。
+        tag = false;
 
     }
     public void loadThemeLasted(){
         FragmentManager fm = getSupportFragmentManager();
         android.support.v4.app.FragmentTransaction ft = fm.beginTransaction();
-        ft.setCustomAnimations(R.anim.in_right,R.anim.out_left).replace(R.id.container,new NewFragment()).commit();
+        nf = new NewFragment();
+        ft.setCustomAnimations(R.anim.in_right,R.anim.out_left).
+                replace(R.id.container, nf,"news").commit();
+        fm.executePendingTransactions();
         setRefreshtag("item");//设置其他主题的刷新
-
+        ((NewFragment)getSupportFragmentManager().findFragmentByTag("news")).updateTheme(islight);
+        tag = true;
     }
     /*public void setId(String id){
-
     }*/
 
     /**
@@ -187,5 +220,13 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
      */
     public void closeDrawLayout(){
             drawerlayout.closeDrawers();
+    }
+
+    /**
+     * 跟换主题
+     */
+    public void updateTheme(){
+        toolbar.setBackgroundColor(getResources().getColor(islight? R.color.light_toolbar : R.color.dark_toolbar));
+        setStatusBarColor(getResources().getColor(islight?R.color.light_toolbar:R.color.dark_toolbar));
     }
 }

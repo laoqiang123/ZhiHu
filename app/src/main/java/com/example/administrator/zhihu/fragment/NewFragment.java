@@ -11,6 +11,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Adapter;
 import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -25,6 +26,7 @@ import com.example.administrator.zhihu.utils.ApplicationUtil;
 import com.example.administrator.zhihu.utils.Contast;
 import com.example.administrator.zhihu.utils.HttpCallableListener;
 import com.example.administrator.zhihu.utils.HttpUtils;
+import com.example.administrator.zhihu.utils.SaveUtils;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.assist.FailReason;
@@ -55,6 +57,7 @@ public class NewFragment extends Fragment {
     private int id;
     private String title;
     private  View v;
+    private NewAdapter adapter ;
     public NewFragment() {
 
     }
@@ -110,7 +113,8 @@ public class NewFragment extends Fragment {
                         }
                     });
                     tv_title.setText(description);
-                    NewAdapter adapter = new NewAdapter(list, ApplicationUtil.getContext());
+                    adapter = new NewAdapter(list, ApplicationUtil.getContext());
+                    updateTheme(SaveUtils.getBoolean(ApplicationUtil.getContext(),"LIGHT"));
                     listview.setAdapter(adapter);
                     listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                         @Override
@@ -183,11 +187,21 @@ public class NewFragment extends Fragment {
                 nb.setTitle(title);
                 nb.setId(id);
                 list.add(nb);
+
             }
         } catch (JSONException e) {
             e.printStackTrace();
         }
 
 
+
+    }
+    public void updateTheme(boolean flag){
+        if(adapter!=null) {
+            adapter.setIslight(flag);
+            listview.setAdapter(adapter);
+        }else{
+
+        }
     }
 }

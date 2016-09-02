@@ -11,6 +11,7 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ListView;
 
@@ -24,6 +25,7 @@ import com.example.administrator.zhihu.utils.ApplicationUtil;
 import com.example.administrator.zhihu.utils.Contast;
 import com.example.administrator.zhihu.utils.HttpCallableListener;
 import com.example.administrator.zhihu.utils.HttpUtils;
+import com.example.administrator.zhihu.utils.SaveUtils;
 import com.youth.banner.Banner;
 import com.youth.banner.BannerConfig;
 
@@ -39,7 +41,7 @@ import java.util.List;
  * @author  laoqiang
  * 主界面今日热点新闻的页面展示
  */
-public class MainFragment extends Fragment {
+public class MainFragment extends Fragment implements AbsListView.OnScrollListener {
     private ListView listview;
     private Banner banner;
     private List<String> titlelist = new ArrayList<>();//存放标题
@@ -49,6 +51,7 @@ public class MainFragment extends Fragment {
     private  Handler handler;
     private Handler handler1;
     private List<NewBean> list = new ArrayList<>();
+    private NewAdapter adapter;
 
     public MainFragment() {
     }
@@ -65,6 +68,7 @@ public class MainFragment extends Fragment {
         listview = (ListView) v.findViewById(R.id.listview);
         View header = inflater.inflate(R.layout.banner_layout,listview,false);
         banner = (Banner) header.findViewById(R.id.banner);
+        listview.setOnScrollListener(this);
         initData();
         banner.setBannerStyle(BannerConfig.CIRCLE_INDICATOR_TITLE);//设置banner什么格式
         banner.setIndicatorGravity(Gravity.RIGHT);//设置指示器位置
@@ -85,20 +89,21 @@ public class MainFragment extends Fragment {
             public void OnBannerClick(View view, int position) {
                 int[] postion = new int[2];
                 view.getLocationOnScreen(postion);
-                postion[0] = view.getWidth()/2;
+                postion[0] = view.getWidth() / 2;
                 Intent intent = new Intent(ApplicationUtil.getContext(), NewContentActivity.class);
                 intent.putExtra("newid", urlid.get(position - 1));
-                intent.putExtra("STARTPOSITION",postion);
+                intent.putExtra("STARTPOSITION", postion);
                 startActivity(intent);
-                getActivity().overridePendingTransition(0,0);//设置没有动画
+                getActivity().overridePendingTransition(0, 0);//设置没有动画
             }
         });
-        final NewAdapter adapter = new NewAdapter(list,ApplicationUtil.getContext());
+        adapter = new NewAdapter(list,ApplicationUtil.getContext());
         handler1 = new Handler(){
             @Override
             public void handleMessage(Message msg) {
                 super.handleMessage(msg);
                 if(msg.what==234){
+                    updateTheme(SaveUtils.getBoolean(ApplicationUtil.getContext(), "LIGHT"));
                     listview.setAdapter(adapter);
                     listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                         @Override
@@ -116,6 +121,7 @@ public class MainFragment extends Fragment {
                 }
             }
         };
+
         return  v;
     }
 
@@ -202,7 +208,35 @@ public class MainFragment extends Fragment {
 
 
     }
+    public void updateTheme(boolean flag){
+        adapter.setIslight(flag);
+        listview.setAdapter(adapter);
 
+    }
 
+    @Override
+    public void onScrollStateChanged(AbsListView view, int scrollState) {
 
+    }
+
+    /**
+     * 这样的话,在里面直接上一个listview会和swiperefreshlayout的下拉刷新冲突,
+     * 怎么样解决这个问题呢?先说一下思路,在listview向下各种滚动的过程中,可以
+     * 加上一个OnScrollListener,监听listview是否滑到了最顶端的一个item,如果在
+     * 最顶端,就将swiperefreshlayout设置成setEnabled(true),如果不再最顶端,就
+     * 设置成setEnabled(false),这样就可以阻止冲突了~~~~~~其他的也可以模仿这种
+     * 处理形式..
+     * @param view
+     * @param firstVisibleItem
+     * @param visibleItemCount
+     * @param totalItemCount
+     */
+    @Override
+    public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+               if(listview!=null&&listview.getChildCount()>0&&listview.getFirstVisiblePosition()==0&&listview.getChildAt(0).getTop()==0){
+                   ((MainActivity)getActivity()).setSwiprrefresh(true);
+               }else{
+                   ((MainActivity)getActivity()).setSwiprrefresh(false);
+               }
+    }
 }

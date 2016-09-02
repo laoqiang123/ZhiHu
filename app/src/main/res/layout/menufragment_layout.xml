@@ -25,6 +25,7 @@
                 android:src="@drawable/ic_account_circle_white_24dp" />
 
             <TextView
+                android:id="@+id/tv_login"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
@@ -39,6 +40,7 @@
             android:orientation="horizontal">
 
             <TextView
+                android:id="@+id/tv_save"
                 android:layout_marginLeft="5dp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -49,6 +51,7 @@
                 />
 
             <TextView
+                android:id="@+id/tv_download"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
@@ -77,6 +80,7 @@
         android:dividerHeight="15dp"
         android:divider="@null"
         android:scrollbars="none"
+
         />
 
 </LinearLayout>
