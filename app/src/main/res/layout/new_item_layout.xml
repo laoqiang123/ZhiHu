@@ -11,11 +11,12 @@
 
         >
         <TextView
+            android:id="@+id/tv_title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="今日热闻"
             android:layout_marginLeft="8dp"
-            android:visibility="gone"
+            android:visibility="invisible"
             />
     </LinearLayout>
     <LinearLayout

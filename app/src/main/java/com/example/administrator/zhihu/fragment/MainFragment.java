@@ -1,10 +1,14 @@
 package com.example.administrator.zhihu.fragment;
 
+import android.content.ContentValues;
 import android.content.Intent;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.Nullable;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.Gravity;
@@ -14,6 +18,7 @@ import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import com.example.administrator.zhihu.R;
 import com.example.administrator.zhihu.activity.MainActivity;
@@ -51,7 +56,12 @@ public class MainFragment extends Fragment implements AbsListView.OnScrollListen
     private  Handler handler;
     private Handler handler1;
     private List<NewBean> list = new ArrayList<>();
+    private List<NewBean> cachelist = new ArrayList<>();
     private NewAdapter adapter;
+    private String date;
+    private boolean lookmore;
+    private  Handler handler2;
+
 
     public MainFragment() {
     }
@@ -72,6 +82,7 @@ public class MainFragment extends Fragment implements AbsListView.OnScrollListen
         initData();
         banner.setBannerStyle(BannerConfig.CIRCLE_INDICATOR_TITLE);//设置banner什么格式
         banner.setIndicatorGravity(Gravity.RIGHT);//设置指示器位置
+        adapter = new NewAdapter(list,ApplicationUtil.getContext());
         handler = new Handler(){
             @Override
             public void handleMessage(Message msg) {
@@ -79,7 +90,43 @@ public class MainFragment extends Fragment implements AbsListView.OnScrollListen
                 if(msg.what==123){
                     banner.setBannerTitleList(titlelist);
                     banner.setImages(imageurllist);//上面所有的设置一定要在设置图片之前。
+                }
+                if(msg.what==234){
+                    listview.setAdapter(adapter);
+                    updateTheme(SaveUtils.getBoolean(ApplicationUtil.getContext(), "LIGHT"));
+                    listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                        @Override
+                        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                            int[] postion = new int[2];
+                            view.getLocationOnScreen(postion);
+                            postion[0] = view.getWidth() / 2;
+                            Intent intent = new Intent(ApplicationUtil.getContext(), NewContentActivity.class);
+                            intent.putExtra("newid", list.get(position - 1).getId());
+                            intent.putExtra("STARTPOSITION", postion);
+                            startActivity(intent);
+                            String readinformation = SaveUtils.getString(ApplicationUtil.getContext(), "READ");
+                            String[] readarray = readinformation.split(",");
+                            StringBuilder sb = new StringBuilder();
+                            if (readarray.length > 200) {//删除很早保存的阅读记录。
+                                for (int i = 100; i < readarray.length; i++) {
+                                    sb.append(readarray[i] + ",");
+                                }
+                                readinformation = sb + readinformation;
+                            }
+                            if (!readinformation.contains(list.get(position - 1).getId() + "")) {
+                                readinformation = readinformation + list.get(position - 1).getId() + ",";
+                            }
+                            SaveUtils.saveString(ApplicationUtil.getContext(), "READ", readinformation);
+                            TextView tv_show = (TextView) view.findViewById(R.id.tv_show);
+                            tv_show.setTextColor(getResources().getColor(R.color.grey2));
+                            getActivity().overridePendingTransition(0, 0);//设置没有动画
+                        }
+                    });
 
+                }
+                if(msg.what==345) {
+                    adapter.addData(cachelist,parseDate(date));
+                    lookmore=false;
                 }
             }
         };
@@ -97,30 +144,6 @@ public class MainFragment extends Fragment implements AbsListView.OnScrollListen
                 getActivity().overridePendingTransition(0, 0);//设置没有动画
             }
         });
-        adapter = new NewAdapter(list,ApplicationUtil.getContext());
-        handler1 = new Handler(){
-            @Override
-            public void handleMessage(Message msg) {
-                super.handleMessage(msg);
-                if(msg.what==234){
-                    updateTheme(SaveUtils.getBoolean(ApplicationUtil.getContext(), "LIGHT"));
-                    listview.setAdapter(adapter);
-                    listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                        @Override
-                        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                            int[] postion = new int[2];
-                            view.getLocationOnScreen(postion);
-                            postion[0] = view.getWidth()/2;
-                            Intent intent = new Intent(ApplicationUtil.getContext(), NewContentActivity.class);
-                            intent.putExtra("newid", list.get(position-1).getId());
-                            intent.putExtra("STARTPOSITION",postion);
-                            startActivity(intent);
-                            getActivity().overridePendingTransition(0,0);//设置没有动画
-                        }
-                    });
-                }
-            }
-        };
 
         return  v;
     }
@@ -129,6 +152,7 @@ public class MainFragment extends Fragment implements AbsListView.OnScrollListen
      * 初始化主界面数据。
      */
     private void initData() {
+         if(HttpUtils.isNetWorkConnected()){
         HttpUtils.getRequest(Contast.BASEURL + Contast.LATESTNEWS, new HttpCallableListener() {
             @Override
             public void onScuess(String response) {
@@ -146,8 +170,15 @@ public class MainFragment extends Fragment implements AbsListView.OnScrollListen
         HttpUtils.getRequest(Contast.BASEURL + Contast.LATESTNEWS, new HttpCallableListener() {
             @Override
             public void onScuess(String response) {
+                SQLiteDatabase sqLiteDatabase = ((MainActivity)getActivity()).getCacheOpenHelper().getWritableDatabase();
+                ContentValues values = new ContentValues();
+                values.put("date",Contast.FIRST_DATE);//第一次请求，没有时间，所以要一个数字，
+                // 这个数字最好大，否则后面被删了
+                values.put("json",response);
+                sqLiteDatabase.insert("CacheList", null, values);
+                sqLiteDatabase.close();
                 parseJson(response);
-                handler1.sendEmptyMessage(234);
+                handler.sendEmptyMessage(234);
             }
 
             @Override
@@ -155,8 +186,69 @@ public class MainFragment extends Fragment implements AbsListView.OnScrollListen
 
             }
         });
+         } else{
+             SQLiteDatabase sqLiteDatabase = ((MainActivity)getActivity()).getCacheOpenHelper().getWritableDatabase();
+             Cursor cursor =  sqLiteDatabase.query("CacheList", new String[]{"json"}, "date=?", new String[]{Contast.FIRST_DATE}, null, null, null);
+             String json = null;
+             if(cursor.moveToNext()){
+                json =  cursor.getString(cursor.getColumnIndex("json"));
+             }else{
+                 lookmore = false;
+             }
+             parseJson(json);
+             cursor.close();
+             sqLiteDatabase.close();
+
+         }
+    }
+
+    /**
+     * 缓存分页加载
+     */
+    public void loadMore(String url){
+        lookmore = true;
+        if(HttpUtils.isNetWorkConnected()){
+        HttpUtils.getRequest(url, new HttpCallableListener() {
+            @Override
+            public void onScuess(String response) {
+                SQLiteDatabase sqLiteDatabase = ((MainActivity)getActivity()).getCacheOpenHelper().getWritableDatabase();
+                ContentValues values = new ContentValues();
+                values.put("date", date);
+                values.put("json", response);
+                sqLiteDatabase.insert("CacheList", null, values);
+                sqLiteDatabase.close();
+                parseBeforeJson(response);
+
+
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+
+            }
+        });
+        }
+        else{
+            SQLiteDatabase sqLiteDatabase = ((MainActivity)getActivity()).getCacheOpenHelper().getWritableDatabase();
+            Cursor cursor =  sqLiteDatabase.query("CacheList", new String[]{"json"}, "date=?", new String[]{date}, null, null, null);
+            String json = null;
+            if(cursor.moveToNext()){
+                json =  cursor.getString(cursor.getColumnIndex("json"));
+                parseBeforeJson(json);
+            }else{
+                sqLiteDatabase.delete("CacheList", "date<?", new String[]{date});
+                lookmore = false;
+                Snackbar snackbar  = Snackbar.make(listview,"没有更多的离线内容！",Snackbar.LENGTH_SHORT);
+                snackbar.show();
+
+            }
+            cursor.close();
+            sqLiteDatabase.close();
+        }
+
 
     }
+
 
     /**
      *
@@ -178,8 +270,6 @@ public class MainFragment extends Fragment implements AbsListView.OnScrollListen
         } catch (JSONException e) {
             e.printStackTrace();
         }
-
-
     }
 
     /**
@@ -189,6 +279,39 @@ public class MainFragment extends Fragment implements AbsListView.OnScrollListen
     public void parseJson(String  result){
         try {
             JSONObject jsonObject = new JSONObject(result);
+             date = jsonObject.getString("date");
+            JSONArray jsonArray = jsonObject.getJSONArray("stories");
+            for(int i = 0;i<jsonArray.length();i++){
+                    JSONObject jsonObject1 = jsonArray.getJSONObject(i);
+                    JSONArray jsonArray1 = jsonObject1.getJSONArray("images");
+                    String images = jsonArray1.getString(0);
+                    String title = jsonObject1.getString("title");
+                    int id = jsonObject1.getInt("id");
+                    int type = jsonObject1.getInt("type");
+                    nb = new NewBean();
+                    nb.setImages(images);
+                    nb.setId(id);
+                    if(i==0){
+                        type = Contast.TOPIC;
+                    }
+                    nb.setType(type);
+                    nb.setTitle(title);
+                    list.add(nb);
+                }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * 解析缓存的json
+     * @param result
+     */
+    public void parseBeforeJson(String result){
+        Log.d("tag13", result + "bbbbbbb");
+        try {
+            JSONObject jsonObject = new JSONObject(result);
+            date = jsonObject.getString("date");
             JSONArray jsonArray = jsonObject.getJSONArray("stories");
             for(int i = 0;i<jsonArray.length();i++){
                 JSONObject jsonObject1 = jsonArray.getJSONObject(i);
@@ -196,18 +319,26 @@ public class MainFragment extends Fragment implements AbsListView.OnScrollListen
                 String images = jsonArray1.getString(0);
                 String title = jsonObject1.getString("title");
                 int id = jsonObject1.getInt("id");
-                nb = new NewBean();
+                int type = jsonObject1.getInt("type");
+                NewBean nb = new NewBean();
                 nb.setImages(images);
-                nb.setTitle(title);
                 nb.setId(id);
-                list.add(nb);
+                if(i==0){
+                    type = Contast.TOPIC;
+                }
+                nb.setType(type);
+                nb.setTitle(title);
+                cachelist.add(nb);
             }
         } catch (JSONException e) {
             e.printStackTrace();
         }
+        handler.sendEmptyMessage(345);
+
 
 
     }
+
     public void updateTheme(boolean flag){
         adapter.setIslight(flag);
         listview.setAdapter(adapter);
@@ -233,10 +364,31 @@ public class MainFragment extends Fragment implements AbsListView.OnScrollListen
      */
     @Override
     public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
-               if(listview!=null&&listview.getChildCount()>0&&listview.getFirstVisiblePosition()==0&&listview.getChildAt(0).getTop()==0){
+        if(listview!=null&&listview.getChildCount()>0){
+               if(listview.getFirstVisiblePosition()==0&&listview.getChildAt(0).getTop()==0){
                    ((MainActivity)getActivity()).setSwiprrefresh(true);
+                    adapter.arriveTop(true);
                }else{
                    ((MainActivity)getActivity()).setSwiprrefresh(false);
                }
+                if(firstVisibleItem+visibleItemCount == totalItemCount&&!lookmore) {
+                Log.d("tag13", "loadmore");
+                    loadMore(Contast.BASEURL + Contast.BEFORE +"/"+date);
+            }
+
+        }
+
+    }
+
+    /**
+     * 时间格式 : 20160904
+     * @param result
+     * @return
+     */
+    public String parseDate(String result){
+        String year = result.substring(0,4).toString();
+        String month = result.substring(4,6);
+        String day = result.substring(6,8);
+        return  year+"年"+month+"月"+day+"日";
     }
 }

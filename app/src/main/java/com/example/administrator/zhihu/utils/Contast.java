@@ -10,8 +10,14 @@ public class Contast {
     public static final String START = "start-image/1080*1776";
     public static final String THEMES = "themes";
     public static final String LATESTNEWS = "news/latest";
+    public static final String BEFORE = "news/before";
     public static final String THEMENEWS = "theme/";
     public static final String CONTENT = "news/";
+    public static  final  String FIRST_DATE = String.valueOf(Integer.MAX_VALUE);
+    public static  final  int TOPIC  = 123;
+    public static  final  int BEFORE_DATE  = 234;
+
+
 
 
 }

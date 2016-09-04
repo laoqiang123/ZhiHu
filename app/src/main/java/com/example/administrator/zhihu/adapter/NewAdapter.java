@@ -15,6 +15,8 @@ import android.widget.TextView;
 import com.example.administrator.zhihu.R;
 import com.example.administrator.zhihu.bean.NewBean;
 import com.example.administrator.zhihu.utils.ApplicationUtil;
+import com.example.administrator.zhihu.utils.Contast;
+import com.example.administrator.zhihu.utils.SaveUtils;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.assist.FailReason;
@@ -28,8 +30,9 @@ import java.util.List;
 public class NewAdapter extends BaseAdapter {
     private List<NewBean> list;
     private Context context;
-    ViewHolder holder = null;
     private  boolean islight;
+    private String date;
+    private ViewHolder holder = null;
 
 
     public NewAdapter(List<NewBean> list, Context context) {
@@ -51,6 +54,13 @@ public class NewAdapter extends BaseAdapter {
     public int getCount() {
         return list.size();
     }
+    public  void addData(List<NewBean> list,String date){
+        this.list.addAll(list);
+        Log.d("tag13", "adddata");
+        this.date = date;
+        notifyDataSetChanged();
+
+    }
 
     @Override
     public Object getItem(int position) {
@@ -61,6 +71,11 @@ public class NewAdapter extends BaseAdapter {
     public long getItemId(int position) {
         return 0;
     }
+    public void arriveTop(boolean flag){
+        if(flag) {
+            holder.tv_title.setText("今日热闻");
+        }
+    }
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
@@ -70,21 +85,37 @@ public class NewAdapter extends BaseAdapter {
             holder.ll_all  = (LinearLayout) convertView.findViewById(R.id.ll_all);
             holder.ll_item  = (LinearLayout) convertView.findViewById(R.id.ll_item);
             holder.tv_show = (TextView) convertView.findViewById(R.id.tv_show);
+            holder.tv_title = (TextView) convertView.findViewById(R.id.tv_title);
             holder.iv = (ImageView) convertView.findViewById(R.id.iv);
             convertView.setTag(holder);
         }else{
-            convertView.getTag();
+            holder  = (ViewHolder) convertView.getTag();
         }
-        holder.ll_all.setBackgroundColor(islight()?ApplicationUtil.getContext().getResources().getColor(R.color.transule):ApplicationUtil.getContext().getResources().getColor(R.color.black));
-        holder.ll_item.setBackgroundColor(islight()?ApplicationUtil.getContext().getResources().getColor(R.color.white):ApplicationUtil.getContext().getResources().getColor(R.color.grey));
+        if(list.get(position).getType()== Contast.TOPIC) {
+            holder.tv_title.setVisibility(View.VISIBLE);
+            if(date!=null){
+                holder.tv_title.setText(date);
+            }
+
+        }else{
+            holder.tv_title.setVisibility(View.INVISIBLE);
+
+        }
+        holder.ll_all.setBackgroundColor(islight() ? ApplicationUtil.getContext().getResources().getColor(R.color.transule) : ApplicationUtil.getContext().getResources().getColor(R.color.black));
+        holder.ll_item.setBackgroundColor(islight() ? ApplicationUtil.getContext().getResources().getColor(R.color.white) : ApplicationUtil.getContext().getResources().getColor(R.color.grey));
         holder.tv_show.setTextColor(islight() ? ApplicationUtil.getContext().getResources().getColor(R.color.black) : ApplicationUtil.getContext().getResources().getColor(R.color.white));
+        String readinformation = SaveUtils.getString(ApplicationUtil.getContext(), "READ");
+        if(readinformation.contains(list.get(position).getId()+"")){
+            holder.tv_show.setTextColor(ApplicationUtil.getContext().getResources().getColor(R.color.grey2));
+        }
         DisplayImageOptions options = new DisplayImageOptions.Builder()//这里的处理就是对于image的错位。
                 .cacheInMemory(true) // default
                 .cacheOnDisk(true) // default
                 .build();
        // 首先在这先进行属性配置，是否进行缓存，加载不出来时候默认的图片，等等属性配置
-
+    Log.d("tag12","----"+list.get(position).getTitle()+"-------");
         holder.tv_show.setText(list.get(position).getTitle());
+
         if(null!=list.get(position).getImages()) {
             ImageLoader.getInstance().loadImage(list.get(position).getImages(), options, new ImageLoadingListener() {
                 @Override
@@ -115,7 +146,7 @@ public class NewAdapter extends BaseAdapter {
         return convertView;
     }
     class ViewHolder{
-        TextView tv_show;
+        TextView tv_show,tv_title;
         ImageView iv;
         LinearLayout ll_all,ll_item;
 

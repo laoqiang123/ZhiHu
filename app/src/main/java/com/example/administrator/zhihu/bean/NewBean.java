@@ -7,6 +7,24 @@ public class NewBean {
     private String images;
     private String  title;
     private int id;
+    private String  date;
+    private int type;
+
+    public int getType() {
+        return type;
+    }
+
+    public void setType(int type) {
+        this.type = type;
+    }
+
+    public String getDate() {
+        return date;
+    }
+
+    public void setDate(String date) {
+        this.date = date;
+    }
 
     public String getImages() {
         return images;

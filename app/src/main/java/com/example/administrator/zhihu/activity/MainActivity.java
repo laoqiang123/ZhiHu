@@ -5,6 +5,9 @@ import android.app.FragmentTransaction;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.widget.DrawerLayout;
@@ -20,6 +23,7 @@ import android.view.WindowManager;
 import android.widget.FrameLayout;
 
 import com.example.administrator.zhihu.R;
+import com.example.administrator.zhihu.db.CacheOpenHelper;
 import com.example.administrator.zhihu.fragment.MainFragment;
 import com.example.administrator.zhihu.fragment.MenuFragment;
 import com.example.administrator.zhihu.fragment.NewFragment;
@@ -42,7 +46,8 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
     private NewFragment nf;
     private MainFragment mf;
     private boolean tag;
-    private boolean freshtag;
+    private long firstime;
+    private FrameLayout container;
 
 
     @Override
@@ -51,7 +56,10 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         setContentView(R.layout.activity_main);
         ininView();
         loadLasted();
-
+    }
+    public CacheOpenHelper getCacheOpenHelper(){
+        CacheOpenHelper openHelper = new CacheOpenHelper(ApplicationUtil.getContext());
+        return openHelper;
     }
 
 
@@ -136,6 +144,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
     private void ininView() {
         toolbar  = (Toolbar) findViewById(R.id.toolbar);
         swiprrefresh = (SwipeRefreshLayout) findViewById(R.id.swiprrefresh);
+        container = (FrameLayout) findViewById(R.id.container);
         setSupportActionBar(toolbar);
         toolbar.setTitle(null);
       //  getSupportActionBar().setTitle("");
@@ -175,12 +184,14 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
      */
     @Override
     public void onRefresh() {
-           if (getRefreshtag().equals("main")) {
-               loadLasted();
-           } else if (getRefreshtag().equals("item")) {
-               loadThemeLasted();
-           }
-           swiprrefresh.setRefreshing(false);
+        swiprrefresh.setRefreshing(true);
+            if (getRefreshtag().equals("main")) {
+                loadLasted();
+            } else if (getRefreshtag().equals("item")) {
+                loadThemeLasted();
+            }
+
+
         // SwipeRefreshLayout布局中目前只能包含一个子布局，
         // 使用侦听机制来通知刷新事件。例如当用户使用下拉手势时，
         // SwipeRefreshLayout会触发OnRefreshListener，然后刷新事
@@ -192,25 +203,27 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         getSupportActionBar().setTitle(title);
     }
     public void loadLasted(){
-        FragmentManager fm = getSupportFragmentManager();
-        android.support.v4.app.FragmentTransaction ft = fm.beginTransaction();
-        mf = new MainFragment();
-        ft.setCustomAnimations(R.anim.in_right,R.anim.out_left).replace(R.id.container,mf,"main").commit();
-        fm.executePendingTransactions();
-        setRefreshtag("main");//设置今日热文的刷新。
-        tag = false;
+                FragmentManager fm = getSupportFragmentManager();
+                android.support.v4.app.FragmentTransaction ft = fm.beginTransaction();
+                mf = new MainFragment();
+               ft.setCustomAnimations(R.anim.slide_in_from_right, R.anim.slide_out_to_left).replace(R.id.container,mf,"main").commit();
+                fm.executePendingTransactions();
+                setRefreshtag("main");//设置今日热文的刷新。
+                tag = false;
+                swiprrefresh.setRefreshing(false);
 
     }
     public void loadThemeLasted(){
         FragmentManager fm = getSupportFragmentManager();
         android.support.v4.app.FragmentTransaction ft = fm.beginTransaction();
         nf = new NewFragment();
-        ft.setCustomAnimations(R.anim.in_right,R.anim.out_left).
+        ft.setCustomAnimations(R.anim.slide_in_from_right,R.anim.slide_out_to_left).
                 replace(R.id.container, nf,"news").commit();
         fm.executePendingTransactions();
         setRefreshtag("item");//设置其他主题的刷新
         ((NewFragment)getSupportFragmentManager().findFragmentByTag("news")).updateTheme(islight);
         tag = true;
+        swiprrefresh.setRefreshing(false);
     }
     /*public void setId(String id){
     }*/
@@ -228,5 +241,19 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
     public void updateTheme(){
         toolbar.setBackgroundColor(getResources().getColor(islight? R.color.light_toolbar : R.color.dark_toolbar));
         setStatusBarColor(getResources().getColor(islight?R.color.light_toolbar:R.color.dark_toolbar));
+    }
+
+    @Override
+    public void onBackPressed() {
+        //super.onBackPressed();不能加这个，这个是继承父类，直finish，就看不到下面的效果。
+        long secondtime =System.currentTimeMillis();
+        if(secondtime-firstime>2000){
+            Snackbar snackbar = Snackbar.make(container,"在按一次退出",Snackbar.LENGTH_SHORT);
+            snackbar.getView().setBackgroundColor(getResources().getColor(R.color.colorPrimary));
+            snackbar.show();
+            firstime = secondtime;
+        }else{
+            finish();
+        }
     }
 }

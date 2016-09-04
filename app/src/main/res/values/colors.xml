@@ -12,6 +12,7 @@
     <color name="transule">#00000000</color>
     <color name="dark_news_topic">#CCFFFFFF</color>
     <color name="grey">#ff666666</color>
+    <color name="grey2">@android:color/darker_gray</color>
 
 
 </resources>
