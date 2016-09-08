@@ -46,7 +46,6 @@ public class NewAdapter extends BaseAdapter {
 
     public void setIslight(boolean islight) {
         this.islight = islight;
-        notifyDataSetChanged();
 
     }
 
@@ -54,9 +53,14 @@ public class NewAdapter extends BaseAdapter {
     public int getCount() {
         return list.size();
     }
+
+    /**
+     * 加载更多数据添加到list
+     * @param list
+     * @param date
+     */
     public  void addData(List<NewBean> list,String date){
         this.list.addAll(list);
-        Log.d("tag13", "adddata");
         this.date = date;
         notifyDataSetChanged();
 
@@ -104,7 +108,7 @@ public class NewAdapter extends BaseAdapter {
         holder.ll_all.setBackgroundColor(islight() ? ApplicationUtil.getContext().getResources().getColor(R.color.transule) : ApplicationUtil.getContext().getResources().getColor(R.color.black));
         holder.ll_item.setBackgroundColor(islight() ? ApplicationUtil.getContext().getResources().getColor(R.color.white) : ApplicationUtil.getContext().getResources().getColor(R.color.grey));
         holder.tv_show.setTextColor(islight() ? ApplicationUtil.getContext().getResources().getColor(R.color.black) : ApplicationUtil.getContext().getResources().getColor(R.color.white));
-        String readinformation = SaveUtils.getString(ApplicationUtil.getContext(), "READ");
+        String readinformation = SaveUtils.getString("READ");
         if(readinformation.contains(list.get(position).getId()+"")){
             holder.tv_show.setTextColor(ApplicationUtil.getContext().getResources().getColor(R.color.grey2));
         }
@@ -149,6 +153,5 @@ public class NewAdapter extends BaseAdapter {
         TextView tv_show,tv_title;
         ImageView iv;
         LinearLayout ll_all,ll_item;
-
     }
 }

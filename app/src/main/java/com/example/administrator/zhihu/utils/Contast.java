@@ -14,6 +14,7 @@ public class Contast {
     public static final String THEMENEWS = "theme/";
     public static final String CONTENT = "news/";
     public static  final  String FIRST_DATE = String.valueOf(Integer.MAX_VALUE);
+    public static  final  String FIRST_TOP_DATE = String.valueOf(Integer.MIN_VALUE);
     public static  final  int TOPIC  = 123;
     public static  final  int BEFORE_DATE  = 234;
 

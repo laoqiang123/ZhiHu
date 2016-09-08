@@ -54,7 +54,6 @@ public class MenuFragment extends Fragment implements View.OnClickListener, Adap
         tv_login = (TextView) v.findViewById(R.id.tv_login);
         tv_save = (TextView) v.findViewById(R.id.tv_save);
         tv_download = (TextView) v.findViewById(R.id.tv_download);
-        initData();
         tv_main.setOnClickListener(this);
         handler = new Handler(){
             @Override
@@ -62,16 +61,20 @@ public class MenuFragment extends Fragment implements View.OnClickListener, Adap
                 super.handleMessage(msg);
                 if(msg.what==123) {
                     listview.setAdapter(adapter);
-                    updateTheme(SaveUtils.getBoolean(ApplicationUtil.getContext(), "LIGHT"));
+                    updateTheme(SaveUtils.getBoolean("LIGHT"));
 
                 }
             }
         };
+        initData();
         listview.setOnItemClickListener(this);
         return v;
     }
 
-
+    /**
+     * 处理主题变换
+     * @param flag
+     */
     public void updateTheme(boolean flag) {
         listview.setBackgroundColor(flag ? getResources().getColor(R.color.white) : getResources().getColor(R.color.black));
         ll_head.setBackgroundColor(flag ? getResources().getColor(R.color.light_toolbar) : getResources().getColor(R.color.black));
@@ -81,24 +84,28 @@ public class MenuFragment extends Fragment implements View.OnClickListener, Adap
         adapter.setIslight(flag);
     }
 
+    /**
+     * 加载侧滑菜里面的主题数据
+      */
     private void initData() {
         if(HttpUtils.isNetWorkConnected()){
             HttpUtils.getRequest(Contast.BASEURL + Contast.THEMES, new HttpCallableListener() {
                 @Override
                 public void onScuess(String response) {
-                    SaveUtils.saveString(ApplicationUtil.getContext(),Contast.THEMES,response);
+                    SaveUtils.saveString(Contast.THEMES,response);
                     parseJson(response);
                 }
 
                 @Override
                 public void onFailure(Exception e) {
-                    String result  =  SaveUtils.getString(ApplicationUtil.getContext(),Contast.THEMES);
-                    parseJson(result);
+
                 }
             });
 
         }else{
             ActivityUtils.shortToast(getActivity(),"当前网络有问题");
+            String result  =  SaveUtils.getString(Contast.THEMES);
+            parseJson(result);
         }
     }
     /**
@@ -126,7 +133,7 @@ public class MenuFragment extends Fragment implements View.OnClickListener, Adap
     }
 
     /**
-     * 菜单首页点击
+     * 菜单项点击首页跳转
      * @param v
      */
     @Override
@@ -150,8 +157,5 @@ public class MenuFragment extends Fragment implements View.OnClickListener, Adap
         ((MainActivity) getActivity()).loadThemeLasted();
         ((MainActivity) getActivity()).setRefreshtag("item");
         ((MainActivity)getActivity()).closeDrawLayout();
-
-
-
     }
 }

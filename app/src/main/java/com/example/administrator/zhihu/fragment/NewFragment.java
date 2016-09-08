@@ -113,7 +113,7 @@ public class NewFragment extends Fragment implements AbsListView.OnScrollListene
                     });
                     tv_title.setText(description);
                     adapter = new NewAdapter(list, ApplicationUtil.getContext());
-                    updateTheme(SaveUtils.getBoolean(ApplicationUtil.getContext(), "LIGHT"));
+                    updateTheme(SaveUtils.getBoolean( "LIGHT"));
                     listview.setAdapter(adapter);
                     listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                         @Override
@@ -125,7 +125,7 @@ public class NewFragment extends Fragment implements AbsListView.OnScrollListene
                             intent.putExtra("newid", list.get(position - 1).getId());//注意存放获取的位置有偏差。否则出现标题，内容不一致。
                             intent.putExtra("STARTPOSITION", postion);
                             startActivity(intent);
-                            String readinformation = SaveUtils.getString(ApplicationUtil.getContext(), "READ");
+                            String readinformation = SaveUtils.getString("READ");
                             String[] readarray = readinformation.split(",");
                             StringBuilder sb = new StringBuilder();
                             if (readarray.length > 200) {//删除很早保存的阅读记录。
@@ -137,7 +137,7 @@ public class NewFragment extends Fragment implements AbsListView.OnScrollListene
                             if (!readinformation.contains(list.get(position - 1).getId() + "")) {
                                 readinformation = readinformation + list.get(position - 1).getId() + ",";
                             }
-                            SaveUtils.saveString(ApplicationUtil.getContext(), "READ", readinformation);
+                            SaveUtils.saveString( "READ", readinformation);
                             TextView tv_show = (TextView) view.findViewById(R.id.tv_show);
                             tv_show.setTextColor(getResources().getColor(R.color.grey2));
                             getActivity().overridePendingTransition(0, 0);//设置没有动画
@@ -147,18 +147,18 @@ public class NewFragment extends Fragment implements AbsListView.OnScrollListene
             }
         };
         listview.setOnScrollListener(this);
-
         return v;
     }
 
+    /**
+     * 跳转新闻详细页面
+     */
     private void initData() {
         HttpUtils.getRequest(Contast.BASEURL + Contast.THEMENEWS + urlid, new HttpCallableListener() {
             @Override
             public void onScuess(String response) {
                 parseJson(response);
                 handler.sendEmptyMessage(123);
-
-
             }
 
             @Override
@@ -211,6 +211,10 @@ public class NewFragment extends Fragment implements AbsListView.OnScrollListene
 
     }
 
+    /**
+     *主题更新
+     * @param flag
+     */
     public void updateTheme(boolean flag) {
         if (adapter != null) {
             adapter.setIslight(flag);
@@ -225,6 +229,13 @@ public class NewFragment extends Fragment implements AbsListView.OnScrollListene
 
     }
 
+    /**
+     * 解决下拉刷新和listview冲突
+     * @param view
+     * @param firstVisibleItem
+     * @param visibleItemCount
+     * @param totalItemCount
+     */
     @Override
     public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
         if (listview != null && listview.getChildCount() > 0) {

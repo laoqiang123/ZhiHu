@@ -46,7 +46,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
     private NewFragment nf;
     private MainFragment mf;
     private boolean tag;
-    private long firstime;
+    private long firstime;//用来记录退出的时候，第一次按下去的时间。
     private FrameLayout container;
 
 
@@ -57,13 +57,15 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         ininView();
         loadLasted();
     }
+
+    /**
+     *
+     * @return  数据库操作对象
+     */
     public CacheOpenHelper getCacheOpenHelper(){
         CacheOpenHelper openHelper = new CacheOpenHelper(ApplicationUtil.getContext());
         return openHelper;
     }
-
-
-
     /**
      * 菜单初始化
      * @param menu
@@ -72,6 +74,10 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.setting, menu);
+        /**
+         * 如果在这不进行这个操作，你如果夜间保存，退出程序，
+         * 下次进入程序，菜单条目上的内容还是你最初默认的日间模式
+         */
         if(islight){
             menu.getItem(0).setTitle("夜间模式");
         }else{
@@ -98,7 +104,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
                     item.setTitle("日间模式");
                     islight = false;
                 }
-                SaveUtils.saveBoolean(ApplicationUtil.getContext(), "LIGHT", islight);
+                SaveUtils.saveBoolean("LIGHT", islight);
                 updateTheme();
                 ((MenuFragment) getSupportFragmentManager().findFragmentById(R.id.menu_fragment)).updateTheme(islight);
                 if(tag==false) {
@@ -134,6 +140,11 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
     public void setTitlecontent(String titlecontent) {
         this.titlecontent = titlecontent;
     }
+
+    /**
+     * 设置是否显示下拉刷新。
+     * @param flag
+     */
     public void setSwiprrefresh(boolean flag){
         swiprrefresh.setEnabled(flag);
     }
@@ -147,40 +158,25 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         container = (FrameLayout) findViewById(R.id.container);
         setSupportActionBar(toolbar);
         toolbar.setTitle(null);
-      //  getSupportActionBar().setTitle("");
-         islight = SaveUtils.getBoolean(ApplicationUtil.getContext(),"LIGHT");
-            updateTheme();
-
-
+        //尽量不要用toolbar设置标题，然后
+        islight = SaveUtils.getBoolean("LIGHT");
+        updateTheme();
         /**
          * 设置下拉刷新的刷新的图标几种变化颜色
          */
-        swiprrefresh.setColorSchemeColors(android.R.color.holo_blue_bright, android.R.
+        swiprrefresh.setColorSchemeResources(android.R.color.holo_blue_bright, android.R.
                 color.holo_green_light, android.R.color.holo_orange_light, android.R
                 .color.holo_red_light);
-            swiprrefresh.setOnRefreshListener(this);
+        swiprrefresh.setOnRefreshListener(this);
         drawerlayout = (DrawerLayout) findViewById(R.id.drawerlayout);
         ActionBarDrawerToggle actionBarDrawerToggle = new ActionBarDrawerToggle(this,
                 drawerlayout,toolbar,R.string.app_name,R.string.app_name);
         drawerlayout.setDrawerListener(actionBarDrawerToggle);
         actionBarDrawerToggle.syncState();
     }
-    @TargetApi(21)
-    private void setStatusBarColor(int statusBarColor) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            // If both system bars are black, we can remove these from our layout,
-            // removing or shrinking the SurfaceFlinger overlay required for our views.
-            Window window = this.getWindow();
-            if (statusBarColor == Color.BLACK && window.getNavigationBarColor() == Color.BLACK) {
-                window.clearFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
-            } else {
-                window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
-            }
-            window.setStatusBarColor(statusBarColor);
-        }
-    }
     /**
      *刷新操作
+     * 刷新分，今日热闻刷新，结合其他主题下数据的刷新。
      */
     @Override
     public void onRefresh() {
@@ -199,20 +195,33 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         // 可以调用setRefreshing(false)。如果要禁用手势和进度动画，
         // 调用setEnabled(false)即可。
     }
+
+    /**
+     * 设置toolbar标题。
+     * @param title
+     */
     public void setToolBarTitle(String title){
         getSupportActionBar().setTitle(title);
     }
+
+    /**
+     * 加载最新今日热闻页面
+     */
     public void loadLasted(){
                 FragmentManager fm = getSupportFragmentManager();
                 android.support.v4.app.FragmentTransaction ft = fm.beginTransaction();
                 mf = new MainFragment();
-               ft.setCustomAnimations(R.anim.slide_in_from_right, R.anim.slide_out_to_left).replace(R.id.container,mf,"main").commit();
+                ft.setCustomAnimations(R.anim.slide_in_from_right, R.anim.slide_out_to_left).replace(R.id.container,mf,"main").commit();//fragment切换动画
                 fm.executePendingTransactions();
                 setRefreshtag("main");//设置今日热文的刷新。
                 tag = false;
                 swiprrefresh.setRefreshing(false);
 
     }
+
+    /**
+     * 加载最新的其他主题的新闻页面
+     */
     public void loadThemeLasted(){
         FragmentManager fm = getSupportFragmentManager();
         android.support.v4.app.FragmentTransaction ft = fm.beginTransaction();
@@ -225,9 +234,6 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         tag = true;
         swiprrefresh.setRefreshing(false);
     }
-    /*public void setId(String id){
-    }*/
-
     /**
      * 关闭侧滑
      */
@@ -239,18 +245,24 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
      * 跟换主题
      */
     public void updateTheme(){
-        toolbar.setBackgroundColor(getResources().getColor(islight? R.color.light_toolbar : R.color.dark_toolbar));
-        setStatusBarColor(getResources().getColor(islight?R.color.light_toolbar:R.color.dark_toolbar));
+        toolbar.setBackgroundColor(getResources().getColor(islight ? R.color.light_toolbar : R.color.dark_toolbar));
+        //这个表达式，就是相当于if else ，如果前面的布尔值，true就是取第一个值，否则就是第二个。
     }
 
+    /**
+     * 返回键操作
+     */
     @Override
     public void onBackPressed() {
         //super.onBackPressed();不能加这个，这个是继承父类，直finish，就看不到下面的效果。
         long secondtime =System.currentTimeMillis();
+        /**
+         * 实现连续点击两次退出。
+         */
         if(secondtime-firstime>2000){
             Snackbar snackbar = Snackbar.make(container,"在按一次退出",Snackbar.LENGTH_SHORT);
             snackbar.getView().setBackgroundColor(getResources().getColor(R.color.colorPrimary));
-            snackbar.show();
+            snackbar.show();//一定要show，否则不显示。
             firstime = secondtime;
         }else{
             finish();

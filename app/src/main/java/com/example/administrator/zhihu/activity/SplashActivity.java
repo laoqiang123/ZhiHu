@@ -32,30 +32,20 @@ import java.io.IOException;
 import java.io.InputStream;
 
 /**
+ * 闪屏页
  * Created by Administrator on 2016/8/5 0005.
  * @author laoqiang
  */
 public class SplashActivity extends AppCompatActivity {
     ImageView iv;
-    Bitmap bitmap;
     Handler handler;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        requestWindowFeature(Window.FEATURE_NO_TITLE);
+        requestWindowFeature(Window.FEATURE_NO_TITLE);//设置全屏
         setContentView(R.layout.splash_layout);
         iv = (ImageView) findViewById(R.id.iv);
         initImage();
-        handler = new Handler(){
-            @Override
-            public void handleMessage(Message msg) {
-                super.handleMessage(msg);
-                if(msg.what==123){
-                    startActivity(ApplicationUtil.getContext(), MainActivity.class);
-                }
-            }
-        };
-
     }
 
     /**
@@ -70,6 +60,9 @@ public class SplashActivity extends AppCompatActivity {
         }else{
                 iv.setImageResource(R.mipmap.start);
         }
+        /**
+         * 闪屏缩放动画
+         */
         ScaleAnimation animation = new ScaleAnimation(1.0f,1.3f,1.0f,1.3f, Animation.RELATIVE_TO_SELF,0.5f,Animation.RELATIVE_TO_SELF,0.5f);
         animation.setFillAfter(true);
         animation.setDuration(5000);
@@ -87,28 +80,16 @@ public class SplashActivity extends AppCompatActivity {
                         public void onScuess(String response) {
                             try {
                                 JSONObject jsonObject = new JSONObject(response);
-                                Log.d("tag", response + "数据");
                                 String imageurl = jsonObject.getString("img");
-                                Log.d("tag", imageurl + "url");
                                 HttpUtils.getImage(imageurl, new HttpImageCallableListener() {
                                     @Override
                                     public void onScuess(byte[] b) {
                                         saveImage(imagefile, b);
-                                     //   handler.sendEmptyMessage(123);
-                                        runOnUiThread(new Runnable() {
-                                            @Override
-                                            public void run() {
-                                                startActivity(ApplicationUtil.getContext(), MainActivity.class);
-
-                                            }
-                                        });
-
+                                        startActivity(ApplicationUtil.getContext(), MainActivity.class);
                                     }
-
                                     @Override
                                     public void onFailure() {
                                         handler.sendEmptyMessage(123);
-
                                     }
                                 });
 
@@ -120,7 +101,7 @@ public class SplashActivity extends AppCompatActivity {
 
                         @Override
                         public void onFailure(Exception e) {
-                            handler.sendEmptyMessage(123);
+                            startActivity(ApplicationUtil.getContext(), MainActivity.class);
 
                         }
                     });
@@ -138,11 +119,7 @@ public class SplashActivity extends AppCompatActivity {
 
             }
         });
-        Log.d("tag", "animation");
         iv.startAnimation(animation);
-
-
-
     }
 
     /**
@@ -172,10 +149,7 @@ public class SplashActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
         }
-
-
     }
-
     /**
      *
      * @param context  上下文

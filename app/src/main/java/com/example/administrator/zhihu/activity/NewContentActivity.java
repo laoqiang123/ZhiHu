@@ -49,7 +49,6 @@ public class NewContentActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         getSupportActionBar().setTitle("享受阅读的乐趣");
          urlid = getIntent().getIntExtra("newid", 0);
-        Log.d("liujinxin", urlid + "序号");
         position = getIntent().getIntArrayExtra("STARTPOSITION");
         startRevealbackground();
         initData();
@@ -81,6 +80,9 @@ public class NewContentActivity extends AppCompatActivity {
 
     }
 
+    /**
+     * 加载新闻详细内容
+     */
     private void initData() {
         HttpUtils.getRequest(Contast.BASEURL + Contast.CONTENT + urlid, new HttpCallableListener() {
             @Override
