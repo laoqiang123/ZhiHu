@@ -260,7 +260,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
          * 实现连续点击两次退出。
          */
         if(secondtime-firstime>2000){
-            Snackbar snackbar = Snackbar.make(container,"在按一次退出",Snackbar.LENGTH_SHORT);
+            Snackbar snackbar = Snackbar.make(container,"再按一次退出",Snackbar.LENGTH_SHORT);
             snackbar.getView().setBackgroundColor(getResources().getColor(R.color.colorPrimary));
             snackbar.show();//一定要show，否则不显示。
             firstime = secondtime;

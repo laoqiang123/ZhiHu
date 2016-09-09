@@ -233,7 +233,9 @@ public class MainFragment extends Fragment implements AbsListView.OnScrollListen
              if(cursor.moveToNext()){
                  topjson =  cursor.getString(cursor.getColumnIndex("json"));
              }
-             parseTopJson(topjson);
+             if (topjson !=null ){
+                 parseTopJson(topjson);
+             }
              cursor.close();
              handler.sendEmptyMessage(123);
              sqLiteDatabase.close();
