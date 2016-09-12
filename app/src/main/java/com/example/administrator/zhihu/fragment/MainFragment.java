@@ -131,7 +131,9 @@ public class MainFragment extends Fragment implements AbsListView.OnScrollListen
                  */
                 if(msg.what==345) {
                     adapter.addData(cachelist,parseDate(date));
+                    Log.d("tag", cachelist.size() + "size");
                     lookmore=false;
+                    cachelist.clear();//如果不清空，为造成两次数据的重叠。
                 }
             }
         };
@@ -168,16 +170,36 @@ public class MainFragment extends Fragment implements AbsListView.OnScrollListen
               * 请求banner图片和title
                */
             HttpUtils.getRequest(Contast.BASEURL + Contast.LATESTNEWS, new HttpCallableListener() {
+
             @Override
             public void onScuess(String response) {
                 parseTopJson(response);
                 SQLiteDatabase sqLiteDatabase = ((MainActivity)getActivity()).getCacheOpenHelper().getWritableDatabase();
-                ContentValues values = new ContentValues();
-                values.put("date",Contast.FIRST_TOP_DATE);
-                values.put("json", response);
-                long id = sqLiteDatabase.insert("CacheList", null, values);//可以根据id判断值是否插入成功。
-                if(id==-1){
-                    Log.d("tag","插入失败");
+                Cursor cursor =  sqLiteDatabase.query("CacheList", new String[]{"json"}, "date=?", new String[]{Contast.FIRST_TOP_DATE}, null, null, null);
+                String topjson = null;
+                if(cursor.moveToNext()){
+                    topjson =  cursor.getString(cursor.getColumnIndex("json"));
+                    if(response.equals(topjson)){
+                        Log.d("tag","banner数据已经缓存");
+                    }else{
+                        Log.d("tag","banner其他时候插入数据");
+                        ContentValues values = new ContentValues();
+                        values.put("date", Contast.FIRST_TOP_DATE);
+                        values.put("json", response);
+                        long id = sqLiteDatabase.insert("CacheList", null, values);//可以根据id判断值是否插入成功。
+                        if (id == -1) {
+                            Log.d("tag", "插入失败");
+                        }
+                    }
+                }else {
+                    ContentValues values = new ContentValues();
+                    values.put("date", Contast.FIRST_TOP_DATE);
+                    values.put("json", response);
+                    long id = sqLiteDatabase.insert("CacheList", null, values);//可以根据id判断值是否插入成功。
+                    Log.d("tag", "banner第一次插入");
+                    if (id == -1) {
+                        Log.d("tag", "插入失败");
+                    }
                 }
                 sqLiteDatabase.close();
                 handler.sendEmptyMessage(123);
@@ -195,14 +217,31 @@ public class MainFragment extends Fragment implements AbsListView.OnScrollListen
         HttpUtils.getRequest(Contast.BASEURL + Contast.LATESTNEWS, new HttpCallableListener() {
             @Override
             public void onScuess(String response) {
-                SQLiteDatabase sqLiteDatabase = ((MainActivity)getActivity()).getCacheOpenHelper().getWritableDatabase();
-                ContentValues values = new ContentValues();
-                values.put("date",Contast.FIRST_DATE);//第一次请求，没有时间，所以要一个数字，
-                // 这个数字最好大，否则后面被删了
-                values.put("json",response);
-                sqLiteDatabase.insert("CacheList", null, values);
-                sqLiteDatabase.close();
                 parseJson(response);
+                SQLiteDatabase sqLiteDatabase = ((MainActivity)getActivity()).getCacheOpenHelper().getWritableDatabase();
+                Cursor cursor =  sqLiteDatabase.query("CacheList", new String[]{"json"}, "date=?", new String[]{Contast.FIRST_DATE}, null, null, null);
+                String json = null;
+                if(cursor.moveToNext()) {
+                    json =  cursor.getString(cursor.getColumnIndex("json"));
+                    if(!response.equals(json)){
+                        ContentValues values = new ContentValues();
+                        values.put("date", Contast.FIRST_DATE);//第一次请求，没有时间，所以要一个数字，
+                        // 这个数字最好大，否则后面被删了
+                        values.put("json", response);
+                        sqLiteDatabase.insert("CacheList", null, values);
+                        Log.d("tag"," 今日其他时候处插入");
+                    }else{
+                        Log.d("tag","今日热点数据已经缓存");
+                    }
+                }else {
+                    ContentValues values = new ContentValues();
+                    values.put("date", Contast.FIRST_DATE);//第一次请求，没有时间，所以要一个数字，
+                    // 这个数字最好大，否则后面被删了
+                    values.put("json", response);
+                    sqLiteDatabase.insert("CacheList", null, values);
+                    Log.d("tag","今日热文第一次插入");
+                }
+                sqLiteDatabase.close();
                 handler.sendEmptyMessage(234);
             }
 
@@ -217,10 +256,10 @@ public class MainFragment extends Fragment implements AbsListView.OnScrollListen
               */
              SQLiteDatabase sqLiteDatabase = ((MainActivity)getActivity()).getCacheOpenHelper().getWritableDatabase();
              Cursor cursor =  sqLiteDatabase.query("CacheList", new String[]{"json"}, "date=?", new String[]{Contast.FIRST_DATE}, null, null, null);
-             String json = null;
-             if(cursor.moveToNext()){
-                 json =  cursor.getString(cursor.getColumnIndex("json"));
-                 parseJson(json);
+                 String json = null;
+                 if(cursor.moveToNext()){
+                     json =  cursor.getString(cursor.getColumnIndex("json"));
+                     parseJson(json);
              }else{
                  lookmore = false;
              }
@@ -232,14 +271,14 @@ public class MainFragment extends Fragment implements AbsListView.OnScrollListen
              String topjson = null;
              if(cursor.moveToNext()){
                  topjson =  cursor.getString(cursor.getColumnIndex("json"));
+                 parseTopJson(topjson);
              }
-             parseTopJson(topjson);
+
              cursor.close();
              handler.sendEmptyMessage(123);
              sqLiteDatabase.close();
          }
     }
-
     /**
      * 缓存分页加载
      */
@@ -254,10 +293,28 @@ public class MainFragment extends Fragment implements AbsListView.OnScrollListen
             @Override
             public void onScuess(String response) {
                 SQLiteDatabase sqLiteDatabase = ((MainActivity)getActivity()).getCacheOpenHelper().getWritableDatabase();
-                ContentValues values = new ContentValues();
-                values.put("date", date);
-                values.put("json", response);
-                sqLiteDatabase.insert("CacheList", null, values);
+                Cursor cursor =  sqLiteDatabase.query("CacheList", new String[]{"json"}, "date=?", new String[]{date}, null, null, null);
+                String json = null;
+                if(cursor.moveToNext()) {
+                    json =  cursor.getString(cursor.getColumnIndex("json"));
+                    if(!response.equals(json)){
+                        ContentValues values = new ContentValues();
+                        values.put("date", date);//第一次请求，没有时间，所以要一个数字，
+                        // 这个数字最好大，否则后面被删了
+                        values.put("json", response);
+                        sqLiteDatabase.insert("CacheList", null, values);
+                        Log.d("tag", "有数据,更多数据已经缓存");
+                    }else{
+                        Log.d("tag","更多数据已经缓存");
+                    }
+                }else {
+                    ContentValues values = new ContentValues();
+                    values.put("date", date);
+                    Log.d("tag","更多加载的时间"+date);
+                    values.put("json", response);
+                    sqLiteDatabase.insert("CacheList", null, values);
+                    Log.d("tag", "更多数据第一次缓存");
+                }
                 sqLiteDatabase.close();
                 parseBeforeJson(response);
             }
@@ -406,16 +463,20 @@ public class MainFragment extends Fragment implements AbsListView.OnScrollListen
         if(listview!=null&&listview.getChildCount()>0){
                if(listview.getFirstVisiblePosition()==0&&listview.getChildAt(0).getTop()==0){
                    ((MainActivity)getActivity()).setSwiprrefresh(true);
-                    adapter.arriveTop(true);
+                   adapter.arriveTop(true);
                }else{
                    ((MainActivity)getActivity()).setSwiprrefresh(false);
                }
+
+
             /**
              * listview滑动底部触发更多加载
              */
                 if(firstVisibleItem+visibleItemCount == totalItemCount&&!lookmore) {
-                    loadMore(Contast.BASEURL + Contast.BEFORE +"/"+date);
-            }
+                    loadMore(Contast.BASEURL + Contast.BEFORE + "/" + date);
+                    Log.d("tag","现在请求的时间"+date);
+
+                }
 
         }
 

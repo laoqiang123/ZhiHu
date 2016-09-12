@@ -9,7 +9,6 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ListView;
 import android.widget.TextView;
 
 import com.example.administrator.zhihu.R;
@@ -22,7 +21,11 @@ import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.assist.FailReason;
 import com.nostra13.universalimageloader.core.listener.ImageLoadingListener;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Created by Administrator on 2016/8/16 0016.
@@ -31,8 +34,9 @@ public class NewAdapter extends BaseAdapter {
     private List<NewBean> list;
     private Context context;
     private  boolean islight;
-    private String date;
     private ViewHolder holder = null;
+    private List<String> time = new ArrayList<>();
+    private Map<Integer,String> map = new HashMap<>();//设置一个来解决时期的复用问题，存放需要改变的时间和位置。
 
 
     public NewAdapter(List<NewBean> list, Context context) {
@@ -61,7 +65,7 @@ public class NewAdapter extends BaseAdapter {
      */
     public  void addData(List<NewBean> list,String date){
         this.list.addAll(list);
-        this.date = date;
+       time.add(date);
         notifyDataSetChanged();
 
     }
@@ -95,15 +99,26 @@ public class NewAdapter extends BaseAdapter {
         }else{
             holder  = (ViewHolder) convertView.getTag();
         }
+
         if(list.get(position).getType()== Contast.TOPIC) {
             holder.tv_title.setVisibility(View.VISIBLE);
-            if(date!=null){
-                holder.tv_title.setText(date);
+                if (time.size() != 0) {
+                    if(!map.containsKey(position)) {
+                        holder.tv_title.setText(time.get(time.size() - 1).toString());
+                        map.put(position, time.get(time.size() - 1));
+                    }
+                }
+                if(map.size()!=0){
+                for (Object keypositon : map.keySet()) {
+                    if (keypositon.equals(position)) {
+                        String value = map.get(keypositon);
+                        holder.tv_title.setText(value);
+                    }
+                }
             }
-
-        }else{
+        }
+        else{
             holder.tv_title.setVisibility(View.INVISIBLE);
-
         }
         holder.ll_all.setBackgroundColor(islight() ? ApplicationUtil.getContext().getResources().getColor(R.color.transule) : ApplicationUtil.getContext().getResources().getColor(R.color.black));
         holder.ll_item.setBackgroundColor(islight() ? ApplicationUtil.getContext().getResources().getColor(R.color.white) : ApplicationUtil.getContext().getResources().getColor(R.color.grey));
@@ -119,7 +134,6 @@ public class NewAdapter extends BaseAdapter {
        // 首先在这先进行属性配置，是否进行缓存，加载不出来时候默认的图片，等等属性配置
     Log.d("tag12","----"+list.get(position).getTitle()+"-------");
         holder.tv_show.setText(list.get(position).getTitle());
-
         if(null!=list.get(position).getImages()) {
             ImageLoader.getInstance().loadImage(list.get(position).getImages(), options, new ImageLoadingListener() {
                 @Override

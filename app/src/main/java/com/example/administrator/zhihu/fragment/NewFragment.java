@@ -17,6 +17,7 @@ import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.administrator.zhihu.R;
 import com.example.administrator.zhihu.activity.MainActivity;
@@ -154,20 +155,26 @@ public class NewFragment extends Fragment implements AbsListView.OnScrollListene
      * 跳转新闻详细页面
      */
     private void initData() {
-        HttpUtils.getRequest(Contast.BASEURL + Contast.THEMENEWS + urlid, new HttpCallableListener() {
-            @Override
-            public void onScuess(String response) {
-                parseJson(response);
-                handler.sendEmptyMessage(123);
-            }
+        if (HttpUtils.isNetWorkConnected()) {
+            HttpUtils.getRequest(Contast.BASEURL + Contast.THEMENEWS + urlid, new HttpCallableListener() {
+                @Override
+                public void onScuess(String response) {
+                    parseJson(response);
+                    handler.sendEmptyMessage(123);
+                }
 
-            @Override
-            public void onFailure(Exception e) {
+                @Override
+                public void onFailure(Exception e) {
 
-            }
-        });
+                }
+            });
 
+        }
+        else{
+            Toast.makeText(ApplicationUtil.getContext(),"没有网络，联网期待！",Toast.LENGTH_SHORT).show();
+        }
     }
+
 
     /**
      * @param result 界面新闻json数据

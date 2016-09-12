@@ -10,7 +10,7 @@ import android.database.sqlite.SQLiteOpenHelper;
  */
 public class CacheOpenHelper extends SQLiteOpenHelper {
     public CacheOpenHelper(Context context) {
-        super(context, "cache.txt", null, 3);
+        super(context, "cache.txt", null, 4);
     }
 
     @Override
@@ -22,6 +22,7 @@ public class CacheOpenHelper extends SQLiteOpenHelper {
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         db.execSQL("DROP TABLE IF EXISTS CacheList");
         onCreate(db);
+        db.execSQL("DROP TABLE IF EXISTS CacheList");
 
     }
 }
